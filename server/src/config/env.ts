@@ -10,7 +10,13 @@ const envSchema = z.object({
   CLIENT_ORIGIN: z.string().default('http://localhost:3000'),
 });
 
-const parsed = envSchema.safeParse(process.env);
+const parsed = envSchema
+  // The placeholder from .env.example is fine on a laptop and must never reach a live server.
+  .refine((env) => !(env.NODE_ENV === 'production' && env.JWT_SECRET.startsWith('change-me')), {
+    path: ['JWT_SECRET'],
+    message: 'JWT_SECRET is still the placeholder value. Set a long random string.',
+  })
+  .safeParse(process.env);
 
 if (!parsed.success) {
   console.error('Invalid environment configuration:');

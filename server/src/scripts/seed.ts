@@ -4,11 +4,14 @@
  *   npm run seed         one account per role (what the assignment asks for)
  *   npm run seed:demo    the same, plus sample borrowers and loans at every
  *                        stage so each dashboard module has data to show
+ *   npm run seed:fresh   wipes the database first, then seeds the demo data
  *
  * Safe to run any number of times: accounts are matched by email and updated
  * in place, and demo records are only created if they do not exist yet.
  */
+import mongoose from 'mongoose';
 import { connectDatabase, disconnectDatabase } from '../config/db';
+import { env } from '../config/env';
 import { EmploymentMode, LoanStatus } from '../constants/loan';
 import { Role } from '../constants/roles';
 import { BorrowerProfile } from '../models/borrowerProfile.model';
@@ -268,9 +271,15 @@ async function seedDemoData(staff: Map<Role, UserDocument>): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const withDemoData = process.argv.includes('--demo');
+  const startFresh = process.argv.includes('--fresh');
+  const withDemoData = startFresh || process.argv.includes('--demo');
 
   await connectDatabase();
+  if (startFresh) {
+    if (env.isProduction) throw new Error('Refusing to wipe the database when NODE_ENV is production.');
+    await mongoose.connection.dropDatabase();
+    console.log('Database wiped.');
+  }
   // Make sure the unique indexes exist before anything is inserted.
   await Promise.all([User.init(), BorrowerProfile.init(), Loan.init(), Payment.init()]);
 
