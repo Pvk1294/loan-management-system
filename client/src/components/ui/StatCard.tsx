@@ -11,9 +11,10 @@ interface StatCardProps {
   /** When given, the card is a button that filters the list below it. */
   onClick?: () => void;
   active?: boolean;
+  className?: string;
 }
 
-export function StatCard({ label, value, icon: Icon, accent = 'bg-slate-100 text-slate-600', onClick, active }: StatCardProps) {
+export function StatCard({ label, value, icon: Icon, accent = 'bg-slate-100 text-slate-600', onClick, active, className }: StatCardProps) {
   const content = (
     <>
       <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', accent)}>
@@ -33,6 +34,7 @@ export function StatCard({ label, value, icon: Icon, accent = 'bg-slate-100 text
   const classes = cn(
     'flex items-center gap-3 rounded-2xl border bg-white p-4 text-left shadow-card transition-all',
     active ? 'border-brand-600 ring-2 ring-brand-600/15' : 'border-slate-200',
+    className,
   );
 
   if (!onClick) return <div className={classes}>{content}</div>;

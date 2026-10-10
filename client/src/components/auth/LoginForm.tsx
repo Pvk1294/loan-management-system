@@ -1,16 +1,19 @@
 'use client';
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { InputField } from '@/components/ui/Field';
-import { errorMessage } from '@/lib/api';
+import { API_URL, errorMessage } from '@/lib/api';
 import { login } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { DEMO_ACCOUNTS, type DemoAccount, SHOW_DEMO_ACCOUNTS } from '@/lib/demo-accounts';
 import { PasswordField } from './PasswordField';
+
+/** How long a sign-in may take before we explain that the server is starting up. */
+const SLOW_AFTER_MS = 4000;
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -18,6 +21,23 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   /** The email being signed in, so the right button shows the spinner. */
   const [pending, setPending] = useState<string | null>(null);
+  const [slow, setSlow] = useState(false);
+
+  // Free hosting puts an idle API to sleep. Touching it as soon as the login
+  // page opens means it is usually awake by the time the form is submitted.
+  useEffect(() => {
+    fetch(`${API_URL}/health`).catch(() => undefined);
+  }, []);
+
+  // If a sign-in is still going after a few seconds, say why instead of leaving a silent spinner.
+  useEffect(() => {
+    if (pending === null) return;
+    const timer = window.setTimeout(() => setSlow(true), SLOW_AFTER_MS);
+    return () => {
+      window.clearTimeout(timer);
+      setSlow(false);
+    };
+  }, [pending]);
 
   const signIn = async (withEmail: string, withPassword: string) => {
     setError(null);
@@ -49,6 +69,11 @@ export function LoginForm() {
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4" noValidate>
         {error && <Alert tone="error">{error}</Alert>}
+        {slow && (
+          <Alert tone="info" title="Waking the server">
+            It sleeps when nobody has used it for a while. The first request can take up to a minute.
+          </Alert>
+        )}
         <InputField
           label="Email"
           type="email"

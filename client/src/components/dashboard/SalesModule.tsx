@@ -104,7 +104,7 @@ export function SalesModule() {
       <PageHeader title="Sales" description="People who have registered but have not applied for a loan yet." />
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatCard label="All leads" value={counts?.total} icon={Users} accent="bg-brand-50 text-brand-700" onClick={() => filterBy(null)} active={stage === null} />
+        <StatCard label="All leads" value={counts?.total} icon={Users} accent="bg-brand-50 text-brand-700" onClick={() => filterBy(null)} active={stage === null} className="col-span-2 lg:col-span-1" />
         <StatCard label="Registered" value={counts?.REGISTERED} icon={UserPlus} onClick={() => filterBy('REGISTERED')} active={stage === 'REGISTERED'} />
         <StatCard label="Not eligible" value={counts?.NOT_ELIGIBLE} icon={UserRoundX} accent="bg-rose-50 text-rose-700" onClick={() => filterBy('NOT_ELIGIBLE')} active={stage === 'NOT_ELIGIBLE'} />
         <StatCard label="Slip pending" value={counts?.ELIGIBLE} icon={FileUp} accent="bg-amber-50 text-amber-700" onClick={() => filterBy('ELIGIBLE')} active={stage === 'ELIGIBLE'} />

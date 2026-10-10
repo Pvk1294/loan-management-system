@@ -33,12 +33,12 @@ export function DateText({ value }: { value: string | null }) {
 export function OutstandingCell({ loan }: { loan: Loan }) {
   const paidShare = loan.totalRepayment > 0 ? (loan.amountPaid / loan.totalRepayment) * 100 : 0;
   return (
-    <div className="ml-auto w-36 md:w-40">
-      <p className="text-right font-medium text-slate-900 tabular-nums">{formatRupeesExact(loan.outstanding)}</p>
+    <div className="w-full max-w-40 md:ml-auto">
+      <p className="font-medium text-slate-900 tabular-nums md:text-right">{formatRupeesExact(loan.outstanding)}</p>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200">
         <div className="h-full rounded-full bg-emerald-500" style={{ width: `${paidShare}%` }} />
       </div>
-      <p className="mt-1 text-right text-xs text-slate-500 tabular-nums">{Math.floor(paidShare)}% repaid</p>
+      <p className="mt-1 text-xs text-slate-500 tabular-nums md:text-right">{Math.floor(paidShare)}% repaid</p>
     </div>
   );
 }

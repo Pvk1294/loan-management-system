@@ -10,7 +10,7 @@ import type { Role } from '@/types/api';
  *   not logged in          → /login
  *   borrower on /dashboard → /apply
  *   staff on /apply        → their dashboard module
- *   executive on another team's module → "access denied" page
+ *   executive on another team's module → the "access denied" page
  *
  * This is an optimistic check: it reads the role from the token without
  * verifying the signature, which is enough to decide what to *show*. It is not
@@ -56,7 +56,7 @@ export function proxy(request: NextRequest) {
     );
     if (requested && !canAccessModule(role, requested.key)) {
       // Keep the URL so it is clear which page was refused, but render the denial.
-      return NextResponse.rewrite(new URL('/access-denied', request.url), { status: 403 });
+      return NextResponse.rewrite(new URL('/access-denied', request.url));
     }
   }
 

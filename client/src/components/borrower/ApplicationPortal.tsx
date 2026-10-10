@@ -109,8 +109,8 @@ export function ApplicationPortal() {
           {latestLoan ? 'New loan application' : `Welcome, ${firstName}`}
         </h1>
         <p className="mt-1.5 text-sm text-slate-500">
-          Three short steps. Borrow {formatRupees(data.rules.loan.MIN_AMOUNT)} to {formatRupees(data.rules.loan.MAX_AMOUNT)} for{' '}
-          {data.rules.loan.MIN_TENURE_DAYS} to {data.rules.loan.MAX_TENURE_DAYS} days.
+          Borrow {formatRupees(data.rules.loan.MIN_AMOUNT)} to {formatRupees(data.rules.loan.MAX_AMOUNT)} for{' '}
+          {data.rules.loan.MIN_TENURE_DAYS} to {data.rules.loan.MAX_TENURE_DAYS} days. It takes a few minutes.
         </p>
       </header>
 

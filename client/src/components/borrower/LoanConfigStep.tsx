@@ -54,6 +54,18 @@ export function LoanConfigStep({ rules, onApplied, onBack }: LoanConfigStepProps
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      {/* On a phone the full panel sits below the sliders, so the total stays pinned in view. */}
+      <div
+        className="sticky top-16 z-10 -mx-4 -mt-2 flex items-center justify-between gap-4 border-b border-slate-200 bg-white/90 px-4 py-2.5 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden"
+        aria-hidden="true"
+      >
+        <span className="text-xs text-slate-500">
+          Total repayment
+          <span className="block text-[11px] text-slate-400">incl. {formatRupeesExact(quote.interest)} interest</span>
+        </span>
+        <span className="text-lg font-semibold tracking-tight text-slate-900 tabular-nums">{formatRupeesExact(quote.totalRepayment)}</span>
+      </div>
+
       <Card>
         <CardHeader title="Configure your loan" description="Move the sliders or type an exact figure." />
         <CardBody className="space-y-9">

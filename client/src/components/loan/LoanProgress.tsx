@@ -7,6 +7,8 @@ interface Milestone {
   label: string;
   date: string | null;
   state: 'done' | 'current' | 'upcoming' | 'failed';
+  /** What the loan is waiting for while this is the next stop. */
+  waitingFor?: string;
 }
 
 /** The four stops of a loan's life, with where this loan stands on each. */
@@ -20,12 +22,14 @@ function milestonesFor(loan: Loan): Milestone[] {
 
   const reached = [loan.appliedAt, loan.sanctionedAt, loan.disbursedAt, loan.closedAt];
   const labels = ['Applied', 'Sanctioned', 'Disbursed', 'Closed'];
+  const waitingFor = ['', 'Under review', 'Awaiting release of funds', 'When fully repaid'];
   const nextIndex = reached.findIndex((date) => !date);
 
   return labels.map((label, index) => ({
     label,
     date: reached[index],
     state: reached[index] ? 'done' : index === nextIndex ? 'current' : 'upcoming',
+    waitingFor: waitingFor[index],
   }));
 }
 
@@ -74,7 +78,7 @@ export function LoanProgress({ loan }: { loan: Loan }) {
                 {milestone.label}
               </p>
               <p className="mt-0.5 text-xs text-slate-500">
-                {milestone.date ? formatDate(milestone.date) : milestone.state === 'current' ? 'In progress' : 'Pending'}
+                {milestone.date ? formatDate(milestone.date) : milestone.state === 'current' ? milestone.waitingFor : 'Pending'}
               </p>
             </div>
           </li>

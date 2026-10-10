@@ -79,7 +79,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           {user && <UserMenu user={user} tone="light" className="min-w-0" />}
         </div>
         {modules.length > 1 && (
-          <nav className="flex gap-1 overflow-x-auto px-3 pb-2" aria-label="Dashboard modules">
+          <nav className="flex gap-1 overflow-x-auto px-2 pb-2" aria-label="Dashboard modules">
             {modules.map((module) => {
               const Icon = MODULE_ICONS[module.key];
               const active = isActive(module.href);
@@ -89,11 +89,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                   href={module.href}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'flex flex-1 items-center justify-center gap-2 rounded-lg px-2 py-2 text-[13px] font-medium whitespace-nowrap transition-colors sm:text-sm',
                     active ? 'bg-white/12 text-white' : 'text-white/60',
                   )}
                 >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  <Icon className="hidden h-4 w-4 sm:block" aria-hidden="true" />
                   {module.label}
                 </Link>
               );
