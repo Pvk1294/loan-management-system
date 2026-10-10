@@ -10,24 +10,18 @@ interface RangeFieldProps {
   max: number;
   step: number;
   onChange: (value: number) => void;
-  /** Shown before the number in the text box, such as a currency symbol. */
   prefix?: string;
-  /** Shown after the number in the text box, such as a unit. */
   suffix?: string;
-  /** Formats the labels under the slider and on the shortcut buttons. */
   formatBound: (value: number) => string;
-  /** Shortcut values offered as buttons. */
   presets?: number[];
 }
 
 /**
- * A slider paired with a text box. The slider is quick for exploring; the text
- * box lets someone type the exact figure they have in mind. Both edit the same
- * value, and typed values are pulled back into range when the box loses focus.
+ * A slider paired with a text box: drag to explore, type for an exact figure.
+ * Typed values are pulled back into range when the box loses focus.
  */
 export function RangeField({ label, value, min, max, step, onChange, prefix, suffix, formatBound, presets }: RangeFieldProps) {
   const id = useId();
-  /** What is being typed, which may be out of range or half-finished. */
   const [draft, setDraft] = useState<string | null>(null);
 
   const clamp = (raw: number) => Math.min(max, Math.max(min, Math.round(raw / step) * step));
@@ -47,12 +41,12 @@ export function RangeField({ label, value, min, max, step, onChange, prefix, suf
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-4">
-        <label htmlFor={id} className="text-sm font-medium text-slate-700">
+      <div className="flex items-end justify-between gap-4">
+        <label htmlFor={id} className="text-sm font-medium text-ink">
           {label}
         </label>
-        <div className="flex h-11 items-center rounded-lg border border-slate-300 bg-white px-3 shadow-sm transition-colors focus-within:border-brand-600 focus-within:ring-4 focus-within:ring-brand-600/15">
-          {prefix && <span className="mr-1 text-sm text-slate-500">{prefix}</span>}
+        <div className="flex h-12 items-center rounded-xl border border-line-strong bg-white px-3.5 shadow-sm transition-[border-color,box-shadow] focus-within:border-brand-600 focus-within:ring-4 focus-within:ring-brand-600/15">
+          {prefix && <span className="mr-1 text-[15px] text-ink-muted">{prefix}</span>}
           <input
             type="text"
             inputMode="numeric"
@@ -64,9 +58,9 @@ export function RangeField({ label, value, min, max, step, onChange, prefix, suf
             onKeyDown={(event) => {
               if (event.key === 'Enter') event.currentTarget.blur();
             }}
-            className="w-24 bg-transparent text-right text-base font-semibold text-slate-900 tabular-nums focus:outline-none"
+            className="amount w-28 bg-transparent text-right text-xl text-ink focus:outline-none"
           />
-          {suffix && <span className="ml-1.5 text-sm text-slate-500">{suffix}</span>}
+          {suffix && <span className="ml-1.5 text-sm text-ink-muted">{suffix}</span>}
         </div>
       </div>
 
@@ -84,7 +78,7 @@ export function RangeField({ label, value, min, max, step, onChange, prefix, suf
           onChange(Number(event.target.value));
         }}
       />
-      <div className="flex justify-between text-xs text-slate-500 tabular-nums">
+      <div className="flex justify-between text-xs text-ink-faint tabular-nums">
         <span>{formatBound(min)}</span>
         <span>{formatBound(max)}</span>
       </div>
@@ -101,10 +95,10 @@ export function RangeField({ label, value, min, max, step, onChange, prefix, suf
               }}
               aria-pressed={value === preset}
               className={cn(
-                'cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-600',
+                'cursor-pointer rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-brand-600',
                 value === preset
-                  ? 'border-brand-600 bg-brand-600 text-white'
-                  : 'border-slate-300 bg-white text-slate-600 hover:border-brand-500 hover:text-brand-700',
+                  ? 'border-ink bg-ink text-paper'
+                  : 'border-line-strong bg-white text-ink-muted hover:-translate-y-px hover:border-ink hover:text-ink',
               )}
             >
               {formatBound(preset)}

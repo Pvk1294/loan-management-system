@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { type CSSProperties } from 'react';
 import { CircleCheck, FileUp, Mail, SearchX, ServerCrash, UserPlus, UserRoundX, Users } from 'lucide-react';
 import { LeadStageBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -71,12 +72,12 @@ export function SalesModule() {
       mobile: 'title',
       cell: (lead) => (
         <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600" aria-hidden="true">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper-2 text-xs font-semibold text-ink-muted" aria-hidden="true">
             {initials(lead.name)}
           </span>
           <div className="min-w-0">
-            <p className="truncate font-medium text-slate-900">{lead.name}</p>
-            <p className="truncate text-xs text-slate-500">{lead.email}</p>
+            <p className="truncate font-medium text-ink">{lead.name}</p>
+            <p className="truncate text-xs text-ink-muted">{lead.email}</p>
           </div>
         </div>
       ),
@@ -87,16 +88,16 @@ export function SalesModule() {
       header: 'Monthly salary',
       align: 'right',
       cell: (lead) =>
-        lead.profile ? <span className="text-slate-900 tabular-nums">{formatRupees(lead.profile.monthlySalary)}</span> : <span className="text-slate-400">—</span>,
+        lead.profile ? <span className="text-ink tabular-nums">{formatRupees(lead.profile.monthlySalary)}</span> : <span className="text-ink-faint">—</span>,
     },
     {
       key: 'employment',
       header: 'Employment',
       cell: (lead) =>
-        lead.profile ? <span className="text-slate-600">{EMPLOYMENT_LABELS[lead.profile.employmentMode]}</span> : <span className="text-slate-400">—</span>,
+        lead.profile ? <span className="text-ink-muted">{EMPLOYMENT_LABELS[lead.profile.employmentMode]}</span> : <span className="text-ink-faint">—</span>,
     },
-    { key: 'registered', header: 'Registered', cell: (lead) => <span className="whitespace-nowrap text-slate-600">{formatDate(lead.registeredAt)}</span> },
-    { key: 'activity', header: 'Last activity', cell: (lead) => <span className="whitespace-nowrap text-slate-600">{formatDate(lead.lastActivityAt)}</span> },
+    { key: 'registered', header: 'Registered', cell: (lead) => <span className="whitespace-nowrap text-ink-muted">{formatDate(lead.registeredAt)}</span> },
+    { key: 'activity', header: 'Last activity', cell: (lead) => <span className="whitespace-nowrap text-ink-muted">{formatDate(lead.lastActivityAt)}</span> },
   ];
 
   return (
@@ -104,11 +105,11 @@ export function SalesModule() {
       <PageHeader title="Sales" description="People who have registered but have not applied for a loan yet." />
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatCard label="All leads" value={counts?.total} icon={Users} accent="bg-brand-50 text-brand-700" onClick={() => filterBy(null)} active={stage === null} className="col-span-2 lg:col-span-1" />
-        <StatCard label="Registered" value={counts?.REGISTERED} icon={UserPlus} onClick={() => filterBy('REGISTERED')} active={stage === 'REGISTERED'} />
-        <StatCard label="Not eligible" value={counts?.NOT_ELIGIBLE} icon={UserRoundX} accent="bg-rose-50 text-rose-700" onClick={() => filterBy('NOT_ELIGIBLE')} active={stage === 'NOT_ELIGIBLE'} />
-        <StatCard label="Slip pending" value={counts?.ELIGIBLE} icon={FileUp} accent="bg-amber-50 text-amber-700" onClick={() => filterBy('ELIGIBLE')} active={stage === 'ELIGIBLE'} />
-        <StatCard label="Ready to apply" value={counts?.READY_TO_APPLY} icon={CircleCheck} accent="bg-emerald-50 text-emerald-700" onClick={() => filterBy('READY_TO_APPLY')} active={stage === 'READY_TO_APPLY'} />
+        <StatCard index={0} label="All leads" value={counts?.total} icon={Users} onClick={() => filterBy(null)} active={stage === null} className="col-span-2 lg:col-span-1" />
+        <StatCard index={1} label="Registered" value={counts?.REGISTERED} icon={UserPlus} caption="no details yet" onClick={() => filterBy('REGISTERED')} active={stage === 'REGISTERED'} />
+        <StatCard index={2} label="Not eligible" value={counts?.NOT_ELIGIBLE} icon={UserRoundX} caption="turned down by the rules" onClick={() => filterBy('NOT_ELIGIBLE')} active={stage === 'NOT_ELIGIBLE'} />
+        <StatCard index={3} label="Slip pending" value={counts?.ELIGIBLE} icon={FileUp} caption="eligible, no document" onClick={() => filterBy('ELIGIBLE')} active={stage === 'ELIGIBLE'} />
+        <StatCard index={4} label="Ready to apply" value={counts?.READY_TO_APPLY} icon={CircleCheck} caption="warmest leads" onClick={() => filterBy('READY_TO_APPLY')} active={stage === 'READY_TO_APPLY'} />
       </div>
 
       <div className="space-y-4">
@@ -124,7 +125,7 @@ export function SalesModule() {
         </div>
 
         {error && !leads ? (
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-card">
+          <div className="rounded-[20px] border border-line bg-white shadow-card">
             <EmptyState
               icon={ServerCrash}
               tone="error"
@@ -164,7 +165,7 @@ export function SalesModule() {
           selected && (
             <a
               href={`mailto:${selected.email}?subject=${encodeURIComponent('Your loan application')}`}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-800"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-sm font-medium text-paper shadow-sm transition-all hover:-translate-y-px hover:shadow-raised"
             >
               <Mail className="h-4 w-4" aria-hidden="true" />
               Email this lead
@@ -197,17 +198,17 @@ function LeadDetails({ lead }: { lead: Lead }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl bg-slate-50 p-4">
-        <p className="text-sm font-medium text-slate-900">{guide.summary}</p>
-        <p className="mt-1 text-sm text-slate-600">{guide.nextStep}</p>
+      <div className="rounded-2xl bg-ink p-5 text-paper">
+        <p className="text-sm font-medium">{guide.summary}</p>
+        <p className="mt-1.5 text-sm text-paper/60">{guide.nextStep}</p>
       </div>
 
       {lead.profile && lead.profile.rejectionReasons.length > 0 && (
         <section>
-          <h3 className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">Why they were not eligible</h3>
+          <h3 className="mb-2 text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">Why they were not eligible</h3>
           <ul className="space-y-2">
-            {lead.profile.rejectionReasons.map((reason) => (
-              <li key={reason.rule} className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">
+            {lead.profile.rejectionReasons.map((reason, i) => (
+              <li key={reason.rule} className="reveal-fade rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900" style={{ '--i': i } as CSSProperties}>
                 {reason.message}
               </li>
             ))}
@@ -216,12 +217,12 @@ function LeadDetails({ lead }: { lead: Lead }) {
       )}
 
       <section>
-        <h3 className="mb-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">Details</h3>
-        <dl className="divide-y divide-slate-100 rounded-xl border border-slate-200 text-sm">
+        <h3 className="mb-3 text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">Details</h3>
+        <dl className="divide-y divide-line rounded-2xl border border-line text-sm">
           {facts.map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-4 px-4 py-2.5">
-              <dt className="shrink-0 text-slate-500">{label}</dt>
-              <dd className="truncate text-right font-medium text-slate-900">{value}</dd>
+              <dt className="shrink-0 text-ink-muted">{label}</dt>
+              <dd className="truncate text-right font-medium text-ink">{value}</dd>
             </div>
           ))}
         </dl>

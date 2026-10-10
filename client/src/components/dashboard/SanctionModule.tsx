@@ -1,9 +1,9 @@
 'use client';
 
 import { type FormEvent, useState } from 'react';
-import { Check, CircleCheckBig, X } from 'lucide-react';
-import { LoanStatusBadge } from '@/components/ui/Badge';
+import { Check, CircleCheckBig, Clock3, IndianRupee, Inbox, X } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
+import { LoanStatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import type { Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Dialog';
@@ -13,7 +13,9 @@ import { api, errorMessage } from '@/lib/api';
 import { EMPLOYMENT_LABELS, formatRupees, formatRupeesExact, formatTenure } from '@/lib/format';
 import type { Loan } from '@/types/api';
 import { ConfirmModal, SummaryList } from './ConfirmModal';
-import { LoanDrawer } from './LoanDrawer';
+import { LoanDetail } from './LoanDetail';
+import { ModuleFigures } from './ModuleFigures';
+import { ModuleLayout } from './ModuleLayout';
 import { LoanModuleList } from './LoanModuleList';
 import { PageHeader } from './PageHeader';
 import { ApplicantCell, DateText, Money } from './loanCells';
@@ -21,10 +23,14 @@ import { useModuleLoans } from './useModuleLoans';
 
 const MIN_REASON_LENGTH = 5;
 
+/** Days the oldest item in the queue has been waiting. */
+const oldestWait = (loans: Loan[] | undefined) =>
+  loans && loans.length > 0 ? Math.max(0, Math.floor((Date.now() - new Date(loans[0].appliedAt).getTime()) / 86_400_000)) : undefined;
+
 /**
  * Sanction: review applied loans and approve or reject them.
- *   Approve → APPLIED becomes SANCTIONED and moves to the Disbursement queue.
- *   Reject  → APPLIED becomes REJECTED (a reason is required) and the loan ends there.
+ *   Approve → APPLIED becomes SANCTIONED and moves to Disbursement.
+ *   Reject  → APPLIED becomes REJECTED, with a reason, and the loan ends there.
  */
 export function SanctionModule() {
   const toast = useToast();
@@ -54,22 +60,19 @@ export function SanctionModule() {
   const isQueue = loans.view === 'queue';
   const columns: Column<Loan>[] = [
     { key: 'applicant', header: 'Applicant', mobile: 'title', cell: (loan) => <ApplicantCell loan={loan} /> },
-    ...(isQueue
-      ? []
-      : [{ key: 'status', header: 'Status', mobile: 'aside', cell: (loan) => <LoanStatusBadge status={loan.status} /> } satisfies Column<Loan>]),
+    ...(isQueue ? [] : [{ key: 'status', header: 'Status', mobile: 'aside', cell: (loan) => <LoanStatusBadge status={loan.status} /> } satisfies Column<Loan>]),
     {
       key: 'income',
-      header: 'Monthly income',
+      header: 'Income',
       cell: (loan) => (
         <div>
-          <Money amount={loan.applicant.monthlySalary} className="text-slate-900" />
-          <p className="text-xs text-slate-500">{EMPLOYMENT_LABELS[loan.applicant.employmentMode]}</p>
+          <Money amount={loan.applicant.monthlySalary} className="text-ink" />
+          <p className="text-xs text-ink-muted">{EMPLOYMENT_LABELS[loan.applicant.employmentMode]}</p>
         </div>
       ),
     },
-    { key: 'amount', header: 'Amount', align: 'right', cell: (loan) => <Money amount={loan.principal} className="font-medium text-slate-900" /> },
-    { key: 'tenure', header: 'Tenure', align: 'right', cell: (loan) => <span className="text-slate-600 tabular-nums">{formatTenure(loan.tenureDays)}</span> },
-    { key: 'total', header: 'Repayment', align: 'right', cell: (loan) => <Money amount={loan.totalRepayment} exact className="text-slate-600" /> },
+    { key: 'amount', header: 'Requested', align: 'right', cell: (loan) => <Money amount={loan.principal} className="font-medium text-ink" /> },
+    { key: 'tenure', header: 'Tenure', align: 'right', cell: (loan) => <span className="whitespace-nowrap text-ink-muted tabular-nums">{formatTenure(loan.tenureDays)}</span> },
     { key: 'applied', header: 'Applied', cell: (loan) => <DateText value={loan.appliedAt} /> },
     ...(isQueue
       ? [
@@ -78,6 +81,7 @@ export function SanctionModule() {
             header: '',
             align: 'right',
             mobile: 'footer',
+            className: 'xl:hidden',
             cell: (loan) => (
               <Button variant="subtle" size="sm" onClick={() => setSelected(loan)}>
                 Review
@@ -90,31 +94,46 @@ export function SanctionModule() {
 
   return (
     <>
-      <PageHeader title="Sanction" description="Review each application, then approve it or reject it with a reason." />
-
-      <LoanModuleList
-        loans={loans}
-        columns={columns}
-        onSelect={setSelected}
-        labels={{ queue: 'Awaiting review', history: 'Decided' }}
-        emptyQueue={{ icon: CircleCheckBig, title: 'All caught up', description: 'There are no applications waiting for a decision.' }}
-        caption="Loan applications"
-      />
-
-      <LoanDrawer
-        loan={selected}
-        onClose={() => setSelected(null)}
-        footer={
-          selected?.status === 'APPLIED' && (
-            <>
-              <Button variant="secondary" icon={<X className="h-4 w-4" />} onClick={() => setAction('reject')} className="text-rose-700 hover:border-rose-300 hover:bg-rose-50">
-                Reject
-              </Button>
-              <Button icon={<Check className="h-4 w-4" />} onClick={() => setAction('approve')}>
-                Approve loan
-              </Button>
-            </>
-          )
+      <ModuleLayout
+        header={<PageHeader title="Sanction" description="Review each application, then approve it or reject it with a reason." />}
+        list={
+          <LoanModuleList
+            loans={loans}
+            columns={columns}
+            onSelect={setSelected}
+            selectedId={selected?.id ?? null}
+            labels={{ queue: 'Awaiting review', history: 'Decided' }}
+            emptyQueue={{ icon: CircleCheckBig, title: 'All caught up', description: 'There are no applications waiting for a decision.' }}
+            caption="Loan applications"
+            figures={
+              <ModuleFigures
+                figures={[
+                  { label: 'Awaiting review', value: loans.meta?.counts.queue, icon: Inbox, caption: 'applications in the queue' },
+                  { label: 'Amount requested', value: loans.meta?.totals.queuePrincipal, money: true, icon: IndianRupee, caption: 'across the queue' },
+                  { label: 'Longest wait', value: isQueue ? oldestWait(loans.loans) : undefined, icon: Clock3, caption: 'days, oldest application' },
+                ]}
+              />
+            }
+          />
+        }
+        detail={
+          <LoanDetail
+            loan={selected}
+            onClose={() => setSelected(null)}
+            placeholder={{ title: 'Pick an application', text: 'Its details, salary slip and history will appear here, with the decision buttons below.' }}
+            actions={
+              selected?.status === 'APPLIED' && (
+                <>
+                  <Button variant="secondary" icon={<X className="h-4 w-4" />} onClick={() => setAction('reject')} className="text-rose-700 hover:border-rose-300 hover:bg-rose-50">
+                    Reject
+                  </Button>
+                  <Button variant="ink" icon={<Check className="h-4 w-4" />} onClick={() => setAction('approve')}>
+                    Approve
+                  </Button>
+                </>
+              )
+            }
+          />
         }
       />
 
@@ -122,7 +141,7 @@ export function SanctionModule() {
         open={action === 'approve' && selected !== null}
         onClose={() => setAction(null)}
         title="Approve this loan?"
-        description="The loan is sanctioned and passed to the Disbursement team."
+        description="It is sanctioned and passed to the Disbursement team."
         confirmLabel="Approve loan"
         onConfirm={approve}
       >
@@ -138,36 +157,20 @@ export function SanctionModule() {
         )}
       </ConfirmModal>
 
-      <RejectModal
-        loan={action === 'reject' ? selected : null}
+      <Modal
+        open={action === 'reject' && selected !== null}
         onClose={() => setAction(null)}
-        onReject={reject}
-      />
+        title="Reject this application?"
+        description={selected && `${selected.applicant.fullName} · ${formatRupees(selected.principal)} for ${formatTenure(selected.tenureDays)}`}
+      >
+        {selected && <RejectForm onClose={() => setAction(null)} onReject={reject} />}
+      </Modal>
     </>
   );
 }
 
-interface RejectModalProps {
-  loan: Loan | null;
-  onClose: () => void;
-  onReject: (reason: string) => Promise<void>;
-}
-
-function RejectModal({ loan, onClose, onReject }: RejectModalProps) {
-  return (
-    <Modal
-      open={loan !== null}
-      onClose={onClose}
-      title="Reject this application?"
-      description={loan && `${loan.applicant.fullName} · ${formatRupees(loan.principal)} for ${formatTenure(loan.tenureDays)}`}
-    >
-      {loan && <RejectForm onClose={onClose} onReject={onReject} />}
-    </Modal>
-  );
-}
-
-/** Kept as its own component so the reason starts empty each time the dialog opens. */
-function RejectForm({ onClose, onReject }: Omit<RejectModalProps, 'loan'>) {
+/** Its own component so the reason starts empty each time the dialog opens. */
+function RejectForm({ onClose, onReject }: { onClose: () => void; onReject: (reason: string) => Promise<void> }) {
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
@@ -180,7 +183,6 @@ function RejectForm({ onClose, onReject }: Omit<RejectModalProps, 'loan'>) {
     event.preventDefault();
     setTouched(true);
     if (tooShort) return;
-
     setSubmitting(true);
     setError(null);
     try {
@@ -195,14 +197,14 @@ function RejectForm({ onClose, onReject }: Omit<RejectModalProps, 'loan'>) {
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       {error && <Alert tone="error">{error}</Alert>}
       <TextareaField
-        label="Reason for rejection"
+        label="Reason"
         placeholder="For example: income could not be verified from the salary slip."
         value={reason}
         onChange={(event) => setReason(event.target.value)}
         maxLength={500}
         autoFocus
         error={touched && tooShort ? `Give a reason of at least ${MIN_REASON_LENGTH} characters.` : undefined}
-        hint="The borrower will see this reason. A rejection cannot be undone."
+        hint="The borrower will see this. A rejection cannot be undone."
       />
       <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
         <Button variant="secondary" onClick={onClose} disabled={submitting}>

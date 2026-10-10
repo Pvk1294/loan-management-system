@@ -15,10 +15,9 @@ interface TabsProps<T extends string> {
   label: string;
 }
 
-/** A segmented control for switching between a few views of the same list. */
 export function Tabs<T extends string>({ tabs, value, onChange, label }: TabsProps<T>) {
   return (
-    <div role="tablist" aria-label={label} className="inline-flex rounded-lg bg-slate-200/70 p-1">
+    <div role="tablist" aria-label={label} className="inline-flex rounded-xl bg-paper-2 p-1">
       {tabs.map((tab) => {
         const selected = tab.value === value;
         return (
@@ -29,9 +28,9 @@ export function Tabs<T extends string>({ tabs, value, onChange, label }: TabsPro
             aria-selected={selected}
             onClick={() => onChange(tab.value)}
             className={cn(
-              'inline-flex cursor-pointer items-center gap-2 rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors',
+              'inline-flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200',
               'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600',
-              selected ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900',
+              selected ? 'bg-white text-ink shadow-card' : 'text-ink-muted hover:text-ink',
             )}
           >
             {tab.label}
@@ -39,7 +38,7 @@ export function Tabs<T extends string>({ tabs, value, onChange, label }: TabsPro
               <span
                 className={cn(
                   'min-w-5 rounded-full px-1.5 py-px text-center text-xs tabular-nums',
-                  selected ? 'bg-brand-100 text-brand-800' : 'bg-slate-300/60 text-slate-600',
+                  selected ? 'bg-ink text-paper' : 'bg-paper-3 text-ink-muted',
                 )}
               >
                 {tab.count}

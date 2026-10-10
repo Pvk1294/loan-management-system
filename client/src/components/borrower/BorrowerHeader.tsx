@@ -8,8 +8,8 @@ import { UserMenu } from '@/components/UserMenu';
 export function BorrowerHeader() {
   const user = useUser();
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-20 border-b border-line/70 bg-paper/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5 sm:px-8">
         <Brand />
         {user ? <UserMenu user={user} className="min-w-0" /> : <Skeleton className="h-9 w-40" />}
       </div>

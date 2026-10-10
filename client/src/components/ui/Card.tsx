@@ -2,7 +2,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('rounded-2xl border border-slate-200 bg-white shadow-card', className)} {...props} />;
+  return <div className={cn('rounded-[20px] border border-line bg-white shadow-card', className)} {...props} />;
 }
 
 interface CardHeaderProps {
@@ -14,10 +14,10 @@ interface CardHeaderProps {
 
 export function CardHeader({ title, description, action, className }: CardHeaderProps) {
   return (
-    <div className={cn('flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-6 sm:pt-6', className)}>
+    <div className={cn('flex flex-wrap items-start justify-between gap-3 px-6 pt-6 sm:px-7 sm:pt-7', className)}>
       <div className="min-w-0">
-        <h2 className="text-base font-semibold tracking-tight text-slate-900">{title}</h2>
-        {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+        <h2 className="display text-[22px] leading-tight text-ink">{title}</h2>
+        {description && <p className="mt-1.5 text-sm text-ink-muted">{description}</p>}
       </div>
       {action}
     </div>
@@ -25,5 +25,5 @@ export function CardHeader({ title, description, action, className }: CardHeader
 }
 
 export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('p-5 sm:p-6', className)} {...props} />;
+  return <div className={cn('p-6 sm:p-7', className)} {...props} />;
 }

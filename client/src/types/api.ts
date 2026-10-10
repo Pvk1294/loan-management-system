@@ -141,6 +141,7 @@ export type ModuleView = 'queue' | 'history';
 
 export interface ModuleLoanMeta extends PageMeta {
   counts: Record<ModuleView, number>;
+  totals: { queuePrincipal: number; queueOutstanding: number };
 }
 
 export type LeadStage = 'REGISTERED' | 'NOT_ELIGIBLE' | 'ELIGIBLE' | 'READY_TO_APPLY';

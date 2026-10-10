@@ -8,11 +8,7 @@ import type { Loan, ModuleLoanMeta, ModuleView } from '@/types/api';
 
 const PAGE_SIZE = 10;
 
-/**
- * The list state shared by the Sanction, Disbursement and Collection modules:
- * which view is open (the team's queue or its history), the page and the
- * search term, plus the loans the API returns for that combination.
- */
+/** The list state shared by the Sanction, Disbursement and Collection modules. */
 export function useModuleLoans(module: 'sanction' | 'disbursement' | 'collection') {
   const [view, setView] = useState<ModuleView>('queue');
   const [page, setPage] = useState(1);
@@ -20,10 +16,7 @@ export function useModuleLoans(module: 'sanction' | 'disbursement' | 'collection
   const term = useDebouncedValue(search.trim());
 
   const query = useApiQuery(`${module}:${view}:${page}:${term}`, (signal) =>
-    apiRequest<{ loans: Loan[] }, ModuleLoanMeta>(`/${module}/loans`, {
-      query: { view, page, limit: PAGE_SIZE, search: term },
-      signal,
-    }),
+    apiRequest<{ loans: Loan[] }, ModuleLoanMeta>(`/${module}/loans`, { query: { view, page, limit: PAGE_SIZE, search: term }, signal }),
   );
 
   return {
@@ -38,7 +31,6 @@ export function useModuleLoans(module: 'sanction' | 'disbursement' | 'collection
     isFetching: query.isFetching,
     reload: query.reload,
     setPage,
-    // Changing the view or the search always starts again from the first page.
     changeView: (next: ModuleView) => {
       setView(next);
       setPage(1);

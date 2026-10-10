@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Inbox, type LucideIcon, SearchX, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { type Column, DataTable } from '@/components/ui/DataTable';
@@ -14,22 +15,20 @@ interface LoanModuleListProps {
   loans: ModuleLoans;
   columns: Column<Loan>[];
   onSelect: (loan: Loan) => void;
+  selectedId: string | null;
   labels: Record<ModuleView, string>;
-  /** What to say when the queue has nothing in it. */
   emptyQueue: { icon?: LucideIcon; title: string; description: string };
   caption: string;
+  /** The KPI tiles above the list. */
+  figures?: ReactNode;
 }
 
-/**
- * The part every loan module shares: Queue / History tabs with counts, a
- * search box, the table (or cards on a phone) and paging. Each module supplies
- * its own columns and decides what happens when a row is opened.
- */
-export function LoanModuleList({ loans, columns, onSelect, labels, emptyQueue, caption }: LoanModuleListProps) {
+/** Queue / History tabs, search, the table (cards on a phone) and paging. */
+export function LoanModuleList({ loans, columns, onSelect, selectedId, labels, emptyQueue, caption, figures }: LoanModuleListProps) {
   const { view, meta, error } = loans;
 
   const empty = loans.isSearching ? (
-    <EmptyState icon={SearchX} title="No loans match your search" description="Try a different name or PAN." />
+    <EmptyState icon={SearchX} title="No loans match" description="Try a different name or PAN." />
   ) : view === 'queue' ? (
     <EmptyState icon={emptyQueue.icon ?? Inbox} title={emptyQueue.title} description={emptyQueue.description} />
   ) : (
@@ -37,7 +36,9 @@ export function LoanModuleList({ loans, columns, onSelect, labels, emptyQueue, c
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {figures}
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs
           label="Loan lists"
@@ -52,7 +53,7 @@ export function LoanModuleList({ loans, columns, onSelect, labels, emptyQueue, c
       </div>
 
       {error && !loans.loans ? (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-card">
+        <div className="rounded-[20px] border border-line bg-white shadow-card">
           <EmptyState
             icon={ServerCrash}
             tone="error"
@@ -67,6 +68,7 @@ export function LoanModuleList({ loans, columns, onSelect, labels, emptyQueue, c
           rows={loans.loans}
           rowKey={(loan) => loan.id}
           onRowClick={onSelect}
+          selectedKey={selectedId}
           loading={loans.isLoading}
           refreshing={loans.isFetching}
           empty={empty}

@@ -28,9 +28,8 @@ function FileIcon({ mimeType, className }: { mimeType: string; className?: strin
 }
 
 /**
- * Step 3: the salary slip. The type and size are checked here first so a wrong
- * file is caught before any upload starts; the server checks them again, and
- * also looks at the file's actual content rather than its name.
+ * Step 2: the salary slip. Type and size are checked here before any upload
+ * starts; the server checks them again and also reads the file's real content.
  */
 export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onUploaded, onContinue, onBack }: SalarySlipStepProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,12 +37,10 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  /** True when the borrower chose to swap a slip that is already uploaded. */
   const [replacing, setReplacing] = useState(false);
   const [viewing, setViewing] = useState(false);
 
   const typeNames = allowedMimeTypes.map((type) => TYPE_LABELS[type] ?? type);
-  const typeList = typeNames.join(', ');
   const typeChoice = new Intl.ListFormat('en', { type: 'disjunction' }).format(typeNames);
   const maxSizeLabel = formatFileSize(maxSizeBytes);
   const showUploader = !salarySlip || replacing;
@@ -66,7 +63,7 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
 
   const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     choose(event.target.files?.[0]);
-    event.target.value = ''; // allow choosing the same file again after an error
+    event.target.value = '';
   };
 
   const onDrop = (event: DragEvent) => {
@@ -94,30 +91,23 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
   };
 
   return (
-    <Card className="mx-auto max-w-2xl">
-      <CardHeader
-        title="Upload your salary slip"
-        description="Your most recent payslip, so we can confirm your income."
-      />
+    <Card className="reveal mx-auto max-w-2xl">
+      <CardHeader title="Your latest salary slip" description="One document, so we can confirm your income." />
       <CardBody className="space-y-5">
-        {/* Reaching this step means the eligibility check passed; say so. */}
-        <p className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
-          You are eligible to apply.
+        <p className="flex items-center gap-2 rounded-xl bg-brand-50 px-4 py-2.5 text-sm font-medium text-brand-800">
+          <CheckCircle2 className="h-4 w-4 shrink-0 animate-check text-brand-600" aria-hidden="true" />
+          Good news: based on your details, you can apply.
         </p>
         {error && <Alert tone="error">{error}</Alert>}
 
         {salarySlip && !replacing && (
-          <div className="flex flex-wrap items-center gap-4 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-700 ring-1 ring-emerald-200">
+          <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-paper/60 p-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-card">
               <FileIcon mimeType={salarySlip.mimeType} className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
-                <span className="truncate">{salarySlip.filename}</span>
-              </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="truncate text-sm font-medium text-ink">{salarySlip.filename}</p>
+              <p className="mt-0.5 text-xs text-ink-muted">
                 {formatFileSize(salarySlip.size)} · uploaded {formatDateTime(salarySlip.uploadedAt)}
               </p>
             </div>
@@ -142,15 +132,15 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
               className={cn(
-                'rounded-2xl border-2 border-dashed p-8 text-center transition-colors',
-                dragging ? 'border-brand-600 bg-brand-50' : 'border-slate-300 bg-slate-50/60',
+                'rounded-[20px] border-2 border-dashed p-10 text-center transition-all duration-200',
+                dragging ? 'scale-[1.01] border-saffron-500 bg-saffron-100/60' : 'border-line-strong bg-paper/50',
               )}
             >
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-brand-700 shadow-card ring-1 ring-slate-200">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ink text-saffron-300 shadow-raised">
                 <UploadCloud className="h-6 w-6" aria-hidden="true" />
               </span>
-              <p className="mt-4 text-sm font-medium text-slate-900">
-                Drag your file here, or{' '}
+              <p className="mt-5 text-[15px] font-medium text-ink">
+                Drop your file here, or{' '}
                 <button
                   type="button"
                   onClick={() => inputRef.current?.click()}
@@ -159,27 +149,20 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
                   browse
                 </button>
               </p>
-              <p className="mt-1 text-xs text-slate-500">
-                {typeList} · up to {maxSizeLabel}
+              <p className="mt-1.5 text-[13px] text-ink-muted">
+                {typeNames.join(', ')} · up to {maxSizeLabel}
               </p>
-              <input
-                ref={inputRef}
-                type="file"
-                accept={allowedMimeTypes.join(',')}
-                onChange={onInputChange}
-                className="sr-only"
-                aria-label="Salary slip file"
-              />
+              <input ref={inputRef} type="file" accept={allowedMimeTypes.join(',')} onChange={onInputChange} className="sr-only" aria-label="Salary slip file" />
             </div>
 
             {file && (
-              <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+              <div className="flex animate-pop items-center gap-3 rounded-2xl border border-line bg-white p-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-paper-2 text-ink-muted">
                   <FileIcon mimeType={file.type} className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-900">{file.name}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="truncate text-sm font-medium text-ink">{file.name}</p>
+                  <p className="text-xs text-ink-muted">
                     {TYPE_LABELS[file.type]} · {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -188,7 +171,7 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
                   onClick={() => setFile(null)}
                   disabled={uploading}
                   aria-label="Remove selected file"
-                  className="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="cursor-pointer rounded-lg p-1.5 text-ink-faint hover:bg-paper-2 hover:text-ink"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -197,17 +180,17 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
           </>
         )}
 
-        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
           <Button variant="ghost" icon={<ArrowLeft className="h-4 w-4" />} onClick={replacing ? () => setReplacing(false) : onBack} disabled={uploading}>
-            {replacing ? 'Keep current file' : 'Back to details'}
+            {replacing ? 'Keep current file' : 'Back'}
           </Button>
           {showUploader ? (
-            <Button size="lg" onClick={upload} loading={uploading} disabled={!file} icon={<UploadCloud className="h-4 w-4" />}>
-              Upload salary slip
+            <Button variant="ink" size="lg" onClick={upload} loading={uploading} disabled={!file} icon={<UploadCloud className="h-4 w-4" />}>
+              Upload
             </Button>
           ) : (
-            <Button size="lg" onClick={onContinue}>
-              Continue to loan
+            <Button variant="ink" size="lg" onClick={onContinue}>
+              Choose your loan
               <ArrowRight className="h-4 w-4" />
             </Button>
           )}

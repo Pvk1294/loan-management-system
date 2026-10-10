@@ -1,21 +1,20 @@
 'use client';
 
-import { type FormEvent, useState } from 'react';
-import { ArrowRight, Briefcase, Check, CircleDashed, Store, UserRoundX, X } from 'lucide-react';
+import { type CSSProperties, type FormEvent, useState } from 'react';
+import { ArrowRight, Briefcase, Clock3, Lock, Store, UserRoundX } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { InputField } from '@/components/ui/Field';
 import { ApiError, api, errorMessage } from '@/lib/api';
 import { cn } from '@/lib/cn';
-import { RULE_FIELD, ageFromDateOfBirth, eligibilityHints } from '@/lib/eligibility';
+import { PAN_REGEX, RULE_FIELD } from '@/lib/eligibility';
 import { EMPLOYMENT_LABELS, formatRupees, todayInIndia } from '@/lib/format';
-import type { BreFailure, BreRuleCode, EligibilityRules, EmploymentMode, Profile } from '@/types/api';
+import type { BreFailure, EmploymentMode, Profile } from '@/types/api';
 
 interface PersonalDetailsStepProps {
   profile: Profile | null;
   defaultName: string;
-  rules: EligibilityRules;
   onEligible: () => void;
 }
 
@@ -35,13 +34,19 @@ const EMPLOYMENT_OPTIONS: { value: EmploymentMode; icon: typeof Briefcase; capti
   { value: 'UNEMPLOYED', icon: UserRoundX, caption: 'Not working right now' },
 ];
 
-/** Fields that must be filled in before the form can be sent at all. */
-function findMissing(values: FormValues): Partial<Record<FieldName, string>> {
+const WHY_WE_ASK = [
+  { title: 'PAN', text: 'Confirms your identity with the tax department.' },
+  { title: 'Salary', text: 'So we offer an amount you can comfortably repay.' },
+  { title: 'Date of birth', text: 'A legal requirement for any credit agreement.' },
+];
+
+/** Shape checks only: is everything filled in and well-formed? Eligibility is the server's call. */
+function findProblems(values: FormValues): Partial<Record<FieldName, string>> {
   const errors: Partial<Record<FieldName, string>> = {};
   if (values.fullName.trim().length < 2) errors.fullName = 'Enter your full name.';
-  if (!values.pan.trim()) errors.pan = 'Enter your PAN.';
+  if (!PAN_REGEX.test(values.pan.trim())) errors.pan = 'A PAN has 5 letters, 4 digits and 1 letter, like ABCDE1234F.';
   if (!values.dateOfBirth) errors.dateOfBirth = 'Enter your date of birth.';
-  if (values.monthlySalary === '' || !Number.isFinite(Number(values.monthlySalary))) {
+  if (values.monthlySalary === '' || !Number.isFinite(Number(values.monthlySalary)) || Number(values.monthlySalary) < 0) {
     errors.monthlySalary = 'Enter your monthly salary.';
   }
   if (!values.employmentMode) errors.employmentMode = 'Choose how you are employed.';
@@ -49,15 +54,10 @@ function findMissing(values: FormValues): Partial<Record<FieldName, string>> {
 }
 
 /**
- * Step 2: personal details and the eligibility check.
- *
- * Two kinds of feedback, kept visibly different:
- *  - red: the field is empty or malformed, so the form will not submit;
- *  - amber: the value is fine as data but fails an eligibility rule. The form
- *    still submits, because the decision belongs to the server, which answers
- *    with the full list of reasons.
+ * Step 1: personal details. The server runs its eligibility rules on submit and
+ * either moves the borrower on or explains, in full, why it cannot.
  */
-export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }: PersonalDetailsStepProps) {
+export function PersonalDetailsStep({ profile, defaultName, onEligible }: PersonalDetailsStepProps) {
   const [today] = useState(todayInIndia);
   const [values, setValues] = useState<FormValues>({
     fullName: profile?.fullName ?? defaultName,
@@ -67,16 +67,11 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
     employmentMode: profile?.employmentMode ?? '',
   });
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
-  /** The server's verdict, when it was a rejection. */
-  const [rejection, setRejection] = useState<BreFailure[]>(
-    profile?.bre.status === 'REJECTED' ? profile.bre.failures : [],
-  );
+  const [refusal, setRefusal] = useState<BreFailure[]>(profile?.bre.status === 'REJECTED' ? profile.bre.failures : []);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const hints = eligibilityHints(values, rules, today);
-  const age = values.dateOfBirth ? ageFromDateOfBirth(values.dateOfBirth, today) : null;
-  const rejectedFields = new Set(rejection.map((failure) => RULE_FIELD[failure.rule]));
+  const refusedFields = new Set(refusal.map((failure) => RULE_FIELD[failure.rule]));
 
   const set = <K extends FieldName>(field: K, value: FormValues[K]) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -85,10 +80,10 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const missing = findMissing(values);
-    setErrors(missing);
+    const problems = findProblems(values);
+    setErrors(problems);
     setFormError(null);
-    if (Object.keys(missing).length > 0) return;
+    if (Object.keys(problems).length > 0) return;
 
     setSubmitting(true);
     try {
@@ -102,11 +97,11 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
           employmentMode: values.employmentMode,
         },
       });
-      setRejection([]);
+      setRefusal([]);
       onEligible();
     } catch (err) {
       if (err instanceof ApiError && err.code === 'BRE_REJECTED') {
-        setRejection((err.details as { failures: BreFailure[] }).failures);
+        setRefusal((err.details as { failures: BreFailure[] }).failures);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (err instanceof ApiError && Object.keys(err.fieldErrors).length > 0) {
         setErrors(err.fieldErrors);
@@ -118,31 +113,22 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
     }
   };
 
-  const checklist: { rule: BreRuleCode; label: string; answered: boolean }[] = [
-    { rule: 'AGE', label: `Aged ${rules.MIN_AGE} to ${rules.MAX_AGE}`, answered: age !== null },
-    {
-      rule: 'SALARY',
-      label: `Earns ${formatRupees(rules.MIN_MONTHLY_SALARY)} or more a month`,
-      answered: values.monthlySalary !== '',
-    },
-    { rule: 'PAN', label: 'Has a valid PAN', answered: values.pan.trim() !== '' },
-    { rule: 'EMPLOYMENT', label: 'Salaried or self-employed', answered: values.employmentMode !== '' },
-  ];
+  const highlight = (field: FieldName) => (refusedFields.has(field as never) ? 'border-rose-300' : undefined);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_19rem]">
-      <Card>
-        <CardHeader title="Personal details" description="We use these to check whether you are eligible to apply." />
+    <div className="grid gap-6 lg:grid-cols-[1fr_17rem]">
+      <Card className="reveal">
+        <CardHeader title="About you" description="A few details so we can check what we can offer." />
         <CardBody>
-          <form onSubmit={onSubmit} className="space-y-5" noValidate>
-            {rejection.length > 0 && (
-              <Alert tone="error" title="You are not eligible to apply with these details">
+          <form onSubmit={onSubmit} className="space-y-6" noValidate>
+            {refusal.length > 0 && (
+              <Alert tone="error" title="We can't offer you a loan with these details">
                 <ul className="mt-1 list-disc space-y-1 pl-4">
-                  {rejection.map((failure) => (
+                  {refusal.map((failure) => (
                     <li key={failure.rule}>{failure.message}</li>
                   ))}
                 </ul>
-                <p className="mt-2">If something was entered incorrectly, correct it below and check again.</p>
+                <p className="mt-2">If something was entered incorrectly, correct it and check again.</p>
               </Alert>
             )}
             {formError && <Alert tone="error">{formError}</Alert>}
@@ -164,23 +150,20 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
                 maxLength={10}
                 autoCapitalize="characters"
                 spellCheck={false}
-                className="font-mono tracking-[0.18em] uppercase placeholder:tracking-[0.18em]"
+                className={cn('font-mono tracking-[0.18em] uppercase placeholder:tracking-[0.18em]', highlight('pan'))}
                 value={values.pan}
                 onChange={(event) => set('pan', event.target.value.toUpperCase().replace(/\s/g, ''))}
                 error={errors.pan}
-                warning={hints.PAN ?? (rejectedFields.has('pan') ? 'This PAN was not accepted.' : undefined)}
-                hint="10 characters: 5 letters, 4 digits, 1 letter"
               />
               <InputField
                 label="Date of birth"
                 name="dateOfBirth"
                 type="date"
                 max={today}
+                className={highlight('dateOfBirth')}
                 value={values.dateOfBirth}
                 onChange={(event) => set('dateOfBirth', event.target.value)}
                 error={errors.dateOfBirth}
-                warning={hints.AGE}
-                hint={age !== null && age >= 0 ? `You are ${age} years old` : `You must be between ${rules.MIN_AGE} and ${rules.MAX_AGE}`}
               />
               <InputField
                 label="Monthly salary"
@@ -190,31 +173,33 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
                 min={0}
                 step={1}
                 prefix="₹"
-                placeholder="60000"
+                placeholder="60,000"
+                className={highlight('monthlySalary')}
                 value={values.monthlySalary}
                 onChange={(event) => set('monthlySalary', event.target.value)}
                 error={errors.monthlySalary}
-                warning={hints.SALARY}
                 hint={
                   values.monthlySalary !== '' && Number(values.monthlySalary) > 0
-                    ? `${formatRupees(Number(values.monthlySalary))} a month`
+                    ? `${formatRupees(Number(values.monthlySalary))} a month, after tax`
                     : 'Your take-home pay each month'
                 }
               />
             </div>
 
             <fieldset>
-              <legend className="mb-2 text-sm font-medium text-slate-700">Employment</legend>
+              <legend className="mb-2 text-sm font-medium text-ink">Employment</legend>
               <div className="grid gap-3 sm:grid-cols-3">
-                {EMPLOYMENT_OPTIONS.map(({ value, icon: Icon, caption }) => {
+                {EMPLOYMENT_OPTIONS.map(({ value, icon: Icon, caption }, i) => {
                   const selected = values.employmentMode === value;
                   return (
                     <label
                       key={value}
+                      style={{ '--i': i } as CSSProperties}
                       className={cn(
-                        'relative flex cursor-pointer items-center gap-3 rounded-xl border bg-white p-3.5 transition-all',
+                        'lift relative flex cursor-pointer items-center gap-3 rounded-2xl border bg-white p-4',
                         'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600',
-                        selected ? 'border-brand-600 bg-brand-50/50 ring-2 ring-brand-600/15' : 'border-slate-300 hover:border-slate-400',
+                        selected ? 'border-ink ring-4 ring-ink/8' : 'border-line-strong',
+                        refusedFields.has('employmentMode') && selected && 'border-rose-300',
                       )}
                     >
                       <input
@@ -227,31 +212,30 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
                       />
                       <span
                         className={cn(
-                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-                          selected ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500',
+                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors',
+                          selected ? 'bg-ink text-saffron-300' : 'bg-paper-2 text-ink-muted',
                         )}
                       >
                         <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
                       </span>
                       <span className="leading-tight">
-                        <span className="block text-sm font-medium text-slate-900">{EMPLOYMENT_LABELS[value]}</span>
-                        <span className="mt-0.5 block text-xs text-slate-500">{caption}</span>
+                        <span className="block text-sm font-medium text-ink">{EMPLOYMENT_LABELS[value]}</span>
+                        <span className="mt-0.5 block text-xs text-ink-muted">{caption}</span>
                       </span>
                     </label>
                   );
                 })}
               </div>
-              {errors.employmentMode ? (
-                <p className="mt-2 text-[13px] text-rose-600">{errors.employmentMode}</p>
-              ) : hints.EMPLOYMENT ? (
-                <p className="mt-2 text-[13px] text-amber-700">{hints.EMPLOYMENT}</p>
-              ) : null}
+              {errors.employmentMode && <p className="mt-2 text-[13px] text-rose-600">{errors.employmentMode}</p>}
             </fieldset>
 
-            <div className="flex flex-col-reverse items-stretch gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-slate-500">Your details are checked securely on our servers.</p>
-              <Button type="submit" size="lg" loading={submitting}>
-                Check eligibility
+            <div className="flex flex-col-reverse items-stretch gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-center gap-1.5 text-xs text-ink-muted">
+                <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+                Checked securely on our servers. Nothing is shared.
+              </p>
+              <Button type="submit" variant="ink" size="lg" loading={submitting}>
+                Continue
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -259,43 +243,22 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
         </CardBody>
       </Card>
 
-      <aside>
-        <Card className="lg:sticky lg:top-24">
-          <CardHeader title="Who can apply" description="All four must be met." />
-          <CardBody className="pt-4">
-            <ul className="space-y-3">
-              {checklist.map(({ rule, label, answered }) => {
-                const state = !answered ? 'pending' : hints[rule] ? 'fail' : 'pass';
-                return (
-                  <li key={rule} className="flex items-start gap-2.5 text-sm">
-                    <span
-                      className={cn(
-                        'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
-                        state === 'pass' && 'bg-emerald-100 text-emerald-700',
-                        state === 'fail' && 'bg-rose-100 text-rose-700',
-                        state === 'pending' && 'text-slate-300',
-                      )}
-                    >
-                      {state === 'pass' && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
-                      {state === 'fail' && <X className="h-3.5 w-3.5" aria-hidden="true" />}
-                      {state === 'pending' && <CircleDashed className="h-5 w-5" aria-hidden="true" />}
-                    </span>
-                    <span className={cn(state === 'fail' ? 'text-rose-800' : state === 'pass' ? 'text-slate-900' : 'text-slate-500')}>
-                      {label}
-                      <span className="sr-only">
-                        {state === 'pass' ? ' (met)' : state === 'fail' ? ' (not met)' : ' (not answered yet)'}
-                      </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="mt-5 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-500">
-              This list updates as you type, but it is only a preview. The final decision is made when you press
-              “Check eligibility”.
-            </p>
-          </CardBody>
-        </Card>
+      <aside className="reveal space-y-4" style={{ '--i': 2 } as CSSProperties}>
+        <div className="rounded-[20px] bg-ink p-6 text-paper">
+          <p className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-paper/50 uppercase">
+            <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+            About two minutes
+          </p>
+          <p className="display mt-3 text-xl leading-snug">Why we ask for these</p>
+          <dl className="mt-4 space-y-3.5">
+            {WHY_WE_ASK.map((item) => (
+              <div key={item.title}>
+                <dt className="text-sm font-medium text-saffron-300">{item.title}</dt>
+                <dd className="mt-0.5 text-[13px] leading-relaxed text-paper/60">{item.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </aside>
     </div>
   );

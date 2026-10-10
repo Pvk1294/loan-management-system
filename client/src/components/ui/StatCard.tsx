@@ -1,54 +1,65 @@
+'use client';
+
+import type { CSSProperties } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { useCountUp } from '@/hooks/useMotion';
 import { cn } from '@/lib/cn';
 import { Skeleton } from './Spinner';
 
 interface StatCardProps {
   label: string;
-  value: number | string | undefined;
-  icon: LucideIcon;
-  /** Tailwind classes for the icon chip, for example "bg-amber-50 text-amber-700". */
-  accent?: string;
-  /** When given, the card is a button that filters the list below it. */
+  value: number | undefined;
+  /** Formats the rolling number, for example as rupees. Defaults to a plain integer. */
+  format?: (value: number) => string;
+  icon?: LucideIcon;
+  caption?: string;
   onClick?: () => void;
   active?: boolean;
+  index?: number;
   className?: string;
 }
 
-export function StatCard({ label, value, icon: Icon, accent = 'bg-slate-100 text-slate-600', onClick, active, className }: StatCardProps) {
+/** A key figure that rolls up to its value when it first appears or changes. */
+export function StatCard({ label, value, format, icon: Icon, caption, onClick, active, index = 0, className }: StatCardProps) {
+  const shown = useCountUp(value ?? 0, 900);
+  const text = value === undefined ? null : format ? format(shown) : Math.round(shown).toLocaleString('en-IN');
+
   const content = (
     <>
-      <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', accent)}>
-        <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[13px] font-medium text-ink-muted">{label}</p>
+        {Icon && <Icon className={cn('h-4 w-4', active ? 'text-saffron-500' : 'text-ink-faint')} aria-hidden="true" />}
       </div>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-slate-500">{label}</p>
-        {value === undefined ? (
-          <Skeleton className="mt-1.5 h-6 w-10" />
-        ) : (
-          <p className="mt-0.5 text-xl font-semibold tracking-tight text-slate-900 tabular-nums">{value}</p>
-        )}
-      </div>
+      {text === null ? (
+        <Skeleton className="mt-2 h-8 w-20" />
+      ) : (
+        <p className="amount mt-1 text-[28px] leading-none text-ink">{text}</p>
+      )}
+      {caption && <p className="mt-2 text-xs text-ink-faint">{caption}</p>}
     </>
   );
 
   const classes = cn(
-    'flex items-center gap-3 rounded-2xl border bg-white p-4 text-left shadow-card transition-all',
-    active ? 'border-brand-600 ring-2 ring-brand-600/15' : 'border-slate-200',
+    'reveal rounded-[20px] border bg-white p-5 text-left shadow-card',
+    active ? 'border-saffron-400 ring-4 ring-saffron-400/15' : 'border-line',
     className,
   );
+  const style = { '--i': index } as CSSProperties;
 
-  if (!onClick) return <div className={classes}>{content}</div>;
-
+  if (!onClick) {
+    return (
+      <div className={classes} style={style}>
+        {content}
+      </div>
+    );
+  }
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={cn(
-        classes,
-        'cursor-pointer hover:border-slate-300 hover:shadow-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-        active && 'hover:border-brand-600',
-      )}
+      style={style}
+      className={cn(classes, 'lift cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600')}
     >
       {content}
     </button>

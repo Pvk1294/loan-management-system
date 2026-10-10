@@ -19,9 +19,34 @@ export interface ModuleViews {
   history: readonly LoanStatus[];
 }
 
+export interface ModuleTotals {
+  /** Rupees the loans in the queue add up to. */
+  queuePrincipal: number;
+  /** Rupees still to be collected across the loans in the queue. */
+  queueOutstanding: number;
+}
+
 export interface ModuleLoanPage {
   loans: LoanDocument[];
-  meta: PageMeta & { counts: { queue: number; history: number } };
+  meta: PageMeta & { counts: { queue: number; history: number }; totals: ModuleTotals };
+}
+
+/** Sums over the queue, for the figures at the top of a module. */
+async function queueTotals(statuses: readonly LoanStatus[]): Promise<ModuleTotals> {
+  const [row] = await Loan.aggregate<{ principal: number; outstanding: number }>([
+    { $match: { status: { $in: [...statuses] } } },
+    {
+      $group: {
+        _id: null,
+        principal: { $sum: '$principal' },
+        outstanding: { $sum: { $subtract: ['$totalRepayment', '$amountPaid'] } },
+      },
+    },
+  ]);
+  return {
+    queuePrincipal: Math.round((row?.principal ?? 0) * 100) / 100,
+    queueOutstanding: Math.round((row?.outstanding ?? 0) * 100) / 100,
+  };
 }
 
 /** References shown on the dashboard: the borrower's account and who changed each status. */
@@ -42,7 +67,7 @@ export async function listModuleLoans(views: ModuleViews, query: ModuleLoanQuery
   // The queue is worked oldest first; history shows the latest activity first.
   const sort: Record<string, 1 | -1> = view === 'queue' ? { appliedAt: 1 } : { updatedAt: -1 };
 
-  const [loans, total, queueCount, historyCount] = await Promise.all([
+  const [loans, total, queueCount, historyCount, totals] = await Promise.all([
     Loan.find(filter)
       .sort(sort)
       .skip((page - 1) * limit)
@@ -51,10 +76,11 @@ export async function listModuleLoans(views: ModuleViews, query: ModuleLoanQuery
     Loan.countDocuments(filter),
     Loan.countDocuments({ status: { $in: views.queue } }),
     Loan.countDocuments({ status: { $in: views.history } }),
+    queueTotals(views.queue),
   ]);
 
   return {
     loans,
-    meta: { ...buildPageMeta(page, limit, total), counts: { queue: queueCount, history: historyCount } },
+    meta: { ...buildPageMeta(page, limit, total), counts: { queue: queueCount, history: historyCount }, totals },
   };
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { type FormEvent, useState } from 'react';
-import { CircleCheckBig, HandCoins, PartyPopper } from 'lucide-react';
+import { AlertTriangle, CircleCheckBig, HandCoins, IndianRupee, Inbox, PartyPopper } from 'lucide-react';
 import { PaymentList } from '@/components/loan/PaymentList';
 import { Alert } from '@/components/ui/Alert';
 import { Badge, LoanStatusBadge } from '@/components/ui/Badge';
@@ -14,8 +14,10 @@ import { useApiQuery } from '@/hooks/useApiQuery';
 import { ApiError, api, errorMessage } from '@/lib/api';
 import { daysUntil, formatDate, formatRupeesExact, toIndiaDate, todayInIndia } from '@/lib/format';
 import type { Loan, Payment } from '@/types/api';
-import { DrawerSection, LoanDrawer } from './LoanDrawer';
+import { DetailSection, LoanDetail } from './LoanDetail';
 import { LoanModuleList } from './LoanModuleList';
+import { ModuleFigures } from './ModuleFigures';
+import { ModuleLayout } from './ModuleLayout';
 import { PageHeader } from './PageHeader';
 import { ApplicantCell, DateText, Money, OutstandingCell } from './loanCells';
 import { useModuleLoans } from './useModuleLoans';
@@ -51,10 +53,10 @@ export function CollectionModule() {
     ...(isQueue
       ? []
       : [{ key: 'status', header: 'Status', mobile: 'aside', cell: (loan) => <LoanStatusBadge status={loan.status} /> } satisfies Column<Loan>]),
-    { key: 'total', header: 'Total repayment', align: 'right', cell: (loan) => <Money amount={loan.totalRepayment} exact className="text-slate-600" /> },
+    { key: 'total', header: 'To repay', align: 'right', cell: (loan) => <Money amount={loan.totalRepayment} exact className="text-ink-muted" /> },
     ...(isQueue
       ? [
-          { key: 'paid', header: 'Paid', align: 'right', cell: (loan) => <Money amount={loan.amountPaid} exact className="text-emerald-700" /> } satisfies Column<Loan>,
+          { key: 'paid', header: 'Paid', align: 'right', cell: (loan) => <Money amount={loan.amountPaid} exact className="text-brand-700" /> } satisfies Column<Loan>,
           { key: 'outstanding', header: 'Outstanding', align: 'right', cell: (loan) => <OutstandingCell loan={loan} /> } satisfies Column<Loan>,
           { key: 'due', header: 'Due', cell: (loan) => <DueCell loan={loan} /> } satisfies Column<Loan>,
           {
@@ -62,8 +64,10 @@ export function CollectionModule() {
             header: '',
             align: 'right',
             mobile: 'footer',
+            className: 'xl:hidden',
             cell: (loan) => (
               <Button
+                variant="ink"
                 size="sm"
                 icon={<HandCoins className="h-4 w-4" />}
                 onClick={(event) => {
@@ -84,30 +88,45 @@ export function CollectionModule() {
 
   return (
     <>
-      <PageHeader title="Collection" description="Record repayments. A loan closes itself once it is paid in full." />
-
-      <LoanModuleList
-        loans={loans}
-        columns={columns}
-        onSelect={setViewing}
-        labels={{ queue: 'Active loans', history: 'Closed' }}
-        emptyQueue={{ icon: CircleCheckBig, title: 'No active loans', description: 'Disbursed loans will appear here until they are repaid.' }}
-        caption="Loans in collection"
-      />
-
-      <LoanDrawer
-        loan={viewing}
-        onClose={() => setViewing(null)}
-        footer={
-          viewing?.status === 'DISBURSED' && (
-            <Button icon={<HandCoins className="h-4 w-4" />} onClick={() => setPaying(viewing)}>
-              Record payment
-            </Button>
-          )
+      <ModuleLayout
+        header={<PageHeader title="Collection" description="Record repayments. A loan closes itself once it is paid in full." />}
+        list={
+          <LoanModuleList
+            loans={loans}
+            columns={columns}
+            onSelect={setViewing}
+            selectedId={viewing?.id ?? null}
+            labels={{ queue: 'Active loans', history: 'Closed' }}
+            emptyQueue={{ icon: CircleCheckBig, title: 'No active loans', description: 'Disbursed loans appear here until they are repaid.' }}
+            caption="Loans in collection"
+            figures={
+              <ModuleFigures
+                figures={[
+                  { label: 'Active loans', value: loans.meta?.counts.queue, icon: Inbox, caption: 'being repaid' },
+                  { label: 'Outstanding', value: loans.meta?.totals.queueOutstanding, money: true, icon: IndianRupee, caption: 'still to collect' },
+                  { label: 'Overdue', value: isQueue ? overdueCount(loans.loans) : undefined, icon: AlertTriangle, caption: 'past their due date' },
+                ]}
+              />
+            }
+          />
         }
-      >
-        {viewing && <PaymentLedger loan={viewing} />}
-      </LoanDrawer>
+        detail={
+          <LoanDetail
+            loan={viewing}
+            onClose={() => setViewing(null)}
+            placeholder={{ title: 'Pick a loan', text: 'Its balance, payments and history will appear here, with the payment button below.' }}
+            actions={
+              viewing?.status === 'DISBURSED' && (
+                <Button variant="ink" icon={<HandCoins className="h-4 w-4" />} onClick={() => setPaying(viewing)}>
+                  Record payment
+                </Button>
+              )
+            }
+          >
+            {viewing && <PaymentLedger loan={viewing} />}
+          </LoanDetail>
+        }
+      />
 
       <Modal
         open={paying !== null}
@@ -121,8 +140,12 @@ export function CollectionModule() {
   );
 }
 
+/** Loans on this page whose due date has passed. */
+const overdueCount = (loans: Loan[] | undefined) =>
+  loans ? loans.filter((loan) => loan.dueDate && daysUntil(loan.dueDate) < 0).length : undefined;
+
 function DueCell({ loan }: { loan: Loan }) {
-  if (!loan.dueDate) return <span className="text-slate-400">—</span>;
+  if (!loan.dueDate) return <span className="text-ink-faint">—</span>;
   const daysLeft = daysUntil(loan.dueDate);
   return (
     <div className="flex flex-col items-start gap-1">
@@ -142,9 +165,9 @@ function PaymentLedger({ loan }: { loan: Loan }) {
     api<{ payments: Payment[] }>(`/collection/loans/${loan.id}/payments`),
   );
   return (
-    <DrawerSection title="Payments">
+    <DetailSection title="Payments">
       <PaymentList payments={data?.payments} emptyText="No payments recorded yet." />
-    </DrawerSection>
+    </DetailSection>
   );
 }
 
@@ -221,18 +244,18 @@ function PaymentForm({ loan, onCancel, onRecorded }: PaymentFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
-      <dl className="grid grid-cols-3 gap-3 rounded-xl bg-slate-50 p-4 text-center">
+      <dl className="grid grid-cols-3 gap-3 rounded-2xl bg-paper p-4 text-center">
         <div>
-          <dt className="text-xs text-slate-500">Total</dt>
-          <dd className="mt-1 text-sm font-semibold text-slate-900 tabular-nums">{formatRupeesExact(loan.totalRepayment)}</dd>
+          <dt className="text-xs text-ink-muted">To repay</dt>
+          <dd className="amount mt-1 text-base text-ink">{formatRupeesExact(loan.totalRepayment)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-slate-500">Paid</dt>
-          <dd className="mt-1 text-sm font-semibold text-emerald-700 tabular-nums">{formatRupeesExact(loan.amountPaid)}</dd>
+          <dt className="text-xs text-ink-muted">Paid</dt>
+          <dd className="amount mt-1 text-base text-brand-700">{formatRupeesExact(loan.amountPaid)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-slate-500">Outstanding</dt>
-          <dd className="mt-1 text-sm font-semibold text-slate-900 tabular-nums">{formatRupeesExact(loan.outstanding)}</dd>
+          <dt className="text-xs text-ink-muted">Outstanding</dt>
+          <dd className="amount mt-1 text-base text-ink">{formatRupeesExact(loan.outstanding)}</dd>
         </div>
       </dl>
 
@@ -309,9 +332,9 @@ function PaymentForm({ loan, onCancel, onRecorded }: PaymentFormProps) {
       ) : (
         amountValid &&
         remainingPaise > 0 && (
-          <p className="rounded-lg bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
+          <p className="rounded-xl bg-paper px-3.5 py-2.5 text-sm text-ink-muted">
             Outstanding after this payment:{' '}
-            <strong className="font-semibold text-slate-900 tabular-nums">{formatRupeesExact(remainingPaise / 100)}</strong>
+            <strong className="font-semibold text-ink tabular-nums">{formatRupeesExact(remainingPaise / 100)}</strong>
           </p>
         )
       )}
@@ -320,7 +343,7 @@ function PaymentForm({ loan, onCancel, onRecorded }: PaymentFormProps) {
         <Button variant="secondary" onClick={onCancel} disabled={submitting}>
           Cancel
         </Button>
-        <Button type="submit" loading={submitting}>
+        <Button type="submit" variant="ink" loading={submitting}>
           Record payment
         </Button>
       </div>

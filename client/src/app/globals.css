@@ -1,51 +1,102 @@
 @import "tailwindcss";
 
+/*
+ * Theme: "paper and ink". Warm cream surfaces, near-black green ink, a deep
+ * green for actions and a saffron accent for the one thing that matters on a
+ * screen. Headlines and amounts are set in a serif; everything else in a sans.
+ */
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Brand: a deep green-teal. Change this one scale to re-theme the whole app. */
-  --color-brand-50: #eefbf6;
-  --color-brand-100: #d5f5e9;
-  --color-brand-200: #aeead5;
-  --color-brand-300: #79d8bc;
-  --color-brand-400: #43bf9e;
-  --color-brand-500: #1fa385;
-  --color-brand-600: #12836c;
-  --color-brand-700: #116958;
-  --color-brand-800: #125448;
-  --color-brand-900: #10453c;
-  --color-brand-950: #072722;
+  /* Surfaces */
+  --color-paper: #f6f2ea;
+  --color-paper-2: #eee8dc;
+  --color-paper-3: #e4ddce;
+  --color-line: #e2dbcd;
+  --color-line-strong: #cfc6b4;
 
-  /* The dark surface used by the sidebar and the sign-in panel. */
-  --color-ink-800: #12262a;
-  --color-ink-900: #0b1b1f;
-  --color-ink-950: #061215;
+  /* Ink */
+  --color-ink: #0e1a17;
+  --color-ink-2: #16302a;
+  --color-ink-3: #22443b;
+  --color-ink-muted: #5c6763;
+  --color-ink-faint: #8a938f;
 
-  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.05);
-  --shadow-raised: 0 4px 6px -2px rgb(15 23 42 / 0.04), 0 12px 24px -6px rgb(15 23 42 / 0.1);
-  --shadow-overlay: 0 24px 60px -12px rgb(6 18 21 / 0.35);
+  /* Green: actions and success */
+  --color-brand-50: #edf8f2;
+  --color-brand-100: #d8f0e4;
+  --color-brand-200: #b2e0cb;
+  --color-brand-300: #7fcaa9;
+  --color-brand-400: #43ad83;
+  --color-brand-500: #1f8f67;
+  --color-brand-600: #0f6b52;
+  --color-brand-700: #0d5643;
+  --color-brand-800: #0d4537;
+  --color-brand-900: #0b382d;
 
-  --animate-fade-in: fade-in 0.2s ease-out both;
-  --animate-rise: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-pop: pop 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-slide-in: slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Saffron: the accent */
+  --color-saffron-100: #fdf0d2;
+  --color-saffron-200: #fbdf9f;
+  --color-saffron-300: #f8cd6b;
+  --color-saffron-400: #f3b944;
+  --color-saffron-500: #e5a12a;
+  --color-saffron-600: #c4831d;
 
-  @keyframes fade-in {
+  --shadow-card: 0 1px 2px rgb(14 26 23 / 0.04), 0 2px 8px rgb(14 26 23 / 0.04);
+  --shadow-raised: 0 6px 16px -4px rgb(14 26 23 / 0.1), 0 18px 40px -12px rgb(14 26 23 / 0.14);
+  --shadow-overlay: 0 30px 80px -16px rgb(14 26 23 / 0.45);
+  --shadow-glow: 0 0 0 1px rgb(243 185 68 / 0.35), 0 12px 40px -8px rgb(243 185 68 / 0.35);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-rise: rise 0.6s var(--ease-out-expo) both;
+  --animate-fade: fade 0.4s ease-out both;
+  --animate-pop: pop 0.3s var(--ease-out-expo) both;
+  --animate-slide-in: slide-in 0.4s var(--ease-out-expo) both;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-drift: drift 18s ease-in-out infinite alternate;
+  --animate-draw: draw 0.8s var(--ease-out-expo) both;
+  --animate-check: check 0.45s var(--ease-out-expo) both;
+  --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
   @keyframes pop {
-    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
   @keyframes slide-in {
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+    50% { transform: translateY(-10px) rotate(-0.5deg); }
+  }
+  @keyframes drift {
+    from { transform: translate3d(-4%, -6%, 0) scale(1); }
+    to { transform: translate3d(6%, 4%, 0) scale(1.15); }
+  }
+  @keyframes draw {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes check {
+    0% { transform: scale(0.4); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgb(15 107 82 / 0.45); }
+    100% { box-shadow: 0 0 0 14px rgb(15 107 82 / 0); }
   }
 }
 
@@ -53,19 +104,19 @@
   html {
     color-scheme: light;
     -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
   body {
-    background: #f6f8f8;
-    color: #0f172a;
+    background: var(--color-paper);
+    color: var(--color-ink);
     font-feature-settings: "cv11", "ss01";
   }
 
   ::selection {
-    background: var(--color-brand-200);
+    background: var(--color-saffron-200);
   }
 
-  /* A page behind an open dialog should not scroll. */
   html:has(dialog[open]) {
     overflow: hidden;
   }
@@ -75,7 +126,6 @@
     max-height: none;
   }
 
-  /* Hide the number spinners: amounts are typed, not nudged. */
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -87,76 +137,125 @@
   }
 }
 
-/*
- * Range slider. The filled part of the track is drawn with a gradient whose
- * stop is the --fill custom property, set from React as a percentage.
- */
+@layer utilities {
+  /* Staggered entrance: set --i on each child. */
+  .reveal {
+    animation: rise 0.6s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 70ms + var(--delay, 0ms));
+  }
+  .reveal-fade {
+    animation: fade 0.5s ease-out both;
+    animation-delay: calc(var(--i, 0) * 70ms + var(--delay, 0ms));
+  }
+
+  /* The serif for amounts: even widths so rolling digits do not jitter. */
+  .amount {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 72, "SOFT" 30;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.02em;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 48, "SOFT" 20;
+    letter-spacing: -0.015em;
+  }
+
+  /* Lifts a card a touch on hover. */
+  .lift {
+    transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo), border-color 0.2s;
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-raised);
+  }
+
+  /* Fine ruled lines, like a ledger page. */
+  .ruled {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      rgb(14 26 23 / 0.05) 27px,
+      rgb(14 26 23 / 0.05) 28px
+    );
+  }
+  .ruled-light {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      rgb(255 255 255 / 0.045) 27px,
+      rgb(255 255 255 / 0.045) 28px
+    );
+  }
+
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+}
+
+/* Range slider: a thick warm track, a saffron-rimmed thumb. */
 @layer components {
   .range {
     --fill: 0%;
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 1.75rem;
+    height: 2rem;
     background: transparent;
     cursor: pointer;
+    touch-action: pan-y;
   }
   .range:focus {
     outline: none;
   }
-
   .range::-webkit-slider-runnable-track {
-    height: 0.5rem;
+    height: 0.625rem;
     border-radius: 9999px;
-    background: linear-gradient(to right, #12836c var(--fill), #e2e8f0 var(--fill));
+    background: linear-gradient(to right, #0f6b52 var(--fill), #e4ddce var(--fill));
   }
   .range::-moz-range-track {
-    height: 0.5rem;
+    height: 0.625rem;
     border-radius: 9999px;
-    background: #e2e8f0;
+    background: #e4ddce;
   }
   .range::-moz-range-progress {
-    height: 0.5rem;
+    height: 0.625rem;
     border-radius: 9999px;
-    background: #12836c;
+    background: #0f6b52;
   }
-
   .range::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-top: -0.5rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-top: -0.5625rem;
     border-radius: 9999px;
-    background: #fff;
-    border: 2px solid #12836c;
-    box-shadow: 0 2px 6px rgb(15 23 42 / 0.18);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: #0e1a17;
+    border: 3px solid #f3b944;
+    box-shadow: 0 4px 12px rgb(14 26 23 / 0.28);
+    transition: transform 0.18s var(--ease-out-expo), box-shadow 0.18s;
   }
   .range::-moz-range-thumb {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.375rem;
+    height: 1.375rem;
     border-radius: 9999px;
-    background: #fff;
-    border: 2px solid #12836c;
-    box-shadow: 0 2px 6px rgb(15 23 42 / 0.18);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: #0e1a17;
+    border: 3px solid #f3b944;
+    box-shadow: 0 4px 12px rgb(14 26 23 / 0.28);
+    transition: transform 0.18s var(--ease-out-expo), box-shadow 0.18s;
   }
   .range:hover::-webkit-slider-thumb,
   .range:active::-webkit-slider-thumb {
-    transform: scale(1.1);
+    transform: scale(1.12);
   }
   .range:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 5px rgb(18 131 108 / 0.22), 0 2px 6px rgb(15 23 42 / 0.18);
+    box-shadow: 0 0 0 6px rgb(243 185 68 / 0.3), 0 4px 12px rgb(14 26 23 / 0.28);
   }
   .range:focus-visible::-moz-range-thumb {
-    box-shadow: 0 0 0 5px rgb(18 131 108 / 0.22), 0 2px 6px rgb(15 23 42 / 0.18);
-  }
-
-  /* The faint dot grid behind the sign-in panel. */
-  .dot-grid {
-    background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
-    background-size: 22px 22px;
+    box-shadow: 0 0 0 6px rgb(243 185 68 / 0.3), 0 4px 12px rgb(14 26 23 / 0.28);
   }
 }
 
@@ -165,6 +264,10 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
   }
 }

@@ -1,6 +1,6 @@
-# Loan Management System
+# Credo · Loan Management System
 
-A lending platform with two sides. **Borrowers** sign up, pass an eligibility check, upload a salary slip and request a loan. **Internal executives** then move that loan through its life (sanction, disbursement, collection) from a dashboard where each role sees only its own module.
+A lending platform with two sides, designed as two products. **Borrowers** get a consumer app: sign up, give a few details, upload a salary slip and choose a loan, with the repayment figure rolling as the sliders move. **Internal executives** get an operations workbench where each role sees only its own module and moves loans through sanction, disbursement and collection with the record open beside the queue.
 
 | | |
 |---|---|
@@ -10,11 +10,15 @@ A lending platform with two sides. **Borrowers** sign up, pass an eligibility ch
 
 **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind CSS · Node.js · Express 5 · MongoDB · Mongoose · JWT · bcrypt
 
-![The loan step: sliders on the left, a live repayment calculation on the right](docs/screenshots/loan-configuration.png)
+![The loan step: sliders on the left, the offer card recalculating on the right](docs/screenshots/loan-step.png)
 
-| Sanction queue (Admin sees every module) | Collection: a repaid loan with its payment ledger |
+| Sign in | Tracking an active loan |
 |---|---|
-| ![Sanction module](docs/screenshots/sanction.png) | ![Loan details drawer](docs/screenshots/collection-drawer.png) |
+| ![Sign-in screen](docs/screenshots/login.png) | ![Loan tracker](docs/screenshots/tracker.png) |
+
+| Sanction: queue and the open application side by side | Collection: an active loan with its ledger |
+|---|---|
+| ![Sanction module](docs/screenshots/sanction.png) | ![Collection module](docs/screenshots/collection.png) |
 
 ## Contents
 
@@ -33,7 +37,7 @@ A lending platform with two sides. **Borrowers** sign up, pass an eligibility ch
 
 ## Login credentials
 
-The seed script creates one account per role. On the login page these are also offered as one-click **Demo accounts**.
+The seed script creates one account per role. On the login page these are also offered under **Evaluator access**: one click signs you in as that role.
 
 | Role | Email | Password | Sees |
 |---|---|---|---|
@@ -60,9 +64,9 @@ The seed script creates one account per role. On the login page these are also o
    | PAN | not in valid PAN format |
    | Employment | unemployed |
 
-   All failed rules are reported together. The form shows the same checks live as hints, but the server's verdict is the one that counts.
+   All failed rules are reported together, and the borrower can correct a mistake and try again. The rules are not shown to the borrower beforehand; the browser only checks that the fields are filled in and well-formed (see [Design decisions](#design-decisions)).
 3. **Salary slip.** PDF, JPG or PNG up to 5 MB, stored in MongoDB (GridFS) and linked to the application.
-4. **Loan configuration.** Sliders for amount (₹50,000 to ₹5,00,000) and tenure (30 to 365 days), with a panel that recalculates as they move. Interest is 12% a year, simple interest:
+4. **Loan configuration.** Sliders for amount (₹50,000 to ₹5,00,000) and tenure (30 to 365 days), with an offer card whose figures roll to the new values as they move. Interest is 12% a year, simple interest:
 
    ```
    SI = (P × R × T) / (365 × 100)        T = tenure in days
@@ -71,7 +75,7 @@ The seed script creates one account per role. On the login page these are also o
    ₹1,00,000 for 90 days  →  SI = ₹2,958.90, total ₹1,02,958.90
    ```
 
-   Applying creates the loan with status `APPLIED`. From then on the borrower sees a tracker: where the loan stands, its terms, and repayments as they are recorded.
+   Applying creates the loan with status `APPLIED`. From then on the borrower sees a tracker in plain words (applied, approved, money sent, repaid), the terms, and repayments as they are recorded.
 
 ### Operations dashboard
 
@@ -82,7 +86,7 @@ The seed script creates one account per role. On the login page these are also o
 | **Disbursement** | `SANCTIONED` loans | **Mark as disbursed**, which sets the due date from the tenure |
 | **Collection** | `DISBURSED` loans | **Record a payment** (unique UTR, amount, date). The loan **closes automatically** when it is paid in full |
 
-Each loan module has a queue (work waiting for that team) and a history (what it has already handled), a details drawer with a full audit trail, and collapses from a table into cards on a phone.
+Each loan module opens with three key figures (count, amount, and the oldest wait or overdue count), then a queue (work waiting for that team) and a history (what it has already handled). From 1280px up the open record sits beside the queue, so a reviewer moves from one application to the next without a modal in the way; on smaller screens the same record slides in as a drawer, and tables collapse into cards on a phone.
 
 ## Run it locally
 
@@ -178,12 +182,12 @@ Run from the repository root.
         ├── proxy.ts          Route guard: redirects by role before a page renders
         ├── app/              Routes: (auth)/login, (auth)/signup, apply, dashboard/<module>
         ├── components/
-        │   ├── ui/           Design system: Button, Field, Dialog, DataTable, Toast…
-        │   ├── auth/         Login and sign-up forms, SessionGate
-        │   ├── borrower/     The four application steps and the loan tracker
-        │   ├── dashboard/    Shell, the four modules, loan drawer, action dialogs
+        │   ├── ui/           Design system: Button, Field, Dialog, DataTable, StatCard, Toast…
+        │   ├── auth/         Offer panel, login and sign-up forms, SessionGate
+        │   ├── borrower/     The three application steps, the success moment and the tracker
+        │   ├── dashboard/    Shell, the four modules, the side-by-side loan detail, action dialogs
         │   └── loan/         Pieces shared by both sides: progress, repayment, history
-        ├── hooks/            useApiQuery, useSession, useDebouncedValue
+        ├── hooks/            useApiQuery, useSession, useDebouncedValue, useCountUp / useMediaQuery
         ├── lib/              API client, session store, role rules, formatting, loan maths
         └── types/            The API's response shapes
 ```
@@ -407,7 +411,7 @@ curl -s localhost:4000/api/collection/loans/<loanId>/payments \
 
 The assignment leaves the schema, the API and several rules open. These are the choices made, and why.
 
-**Where does the BRE live? Both, with different jobs.** The server is the authority: `services/bre.ts` is a pure function that runs when details are submitted and *again* when the loan is created, so a request that skips the browser is still judged. The frontend repeats the checks only to show a problem the moment it is typed. The form deliberately still submits when a hint is showing, because the decision is the server's and its answer, with reasons, is what gets recorded.
+**Where does the BRE live? On the server, and only there.** `services/bre.ts` is a pure function that runs when details are submitted and *again* when the loan is created, so a request that skips the browser is still judged. The browser does not get a copy of the rules. It checks only that fields are present and well-formed (a real date, a number, the public PAN format); whether the applicant *qualifies* is answered by the API and, if the answer is no, shown with every reason. Three reasons for keeping it that way: a lender does not publish its underwriting criteria on the application form; duplicated rules drift apart the first time one side is changed; and a verdict shown before submission is one the server has not actually given.
 
 **A BRE rejection is `422`, a malformed form is `400`.** They are different failures. "`monthlySalary` is not a number" is a broken request. "₹18,000 is below the minimum" is a valid request the business turns down. The attempt is saved either way, so Sales can see leads who were not eligible and why. A rejected borrower can correct a mistake and submit again.
 
@@ -433,6 +437,8 @@ The assignment leaves the schema, the API and several rules open. These are the 
 
 **Dates follow the Indian calendar.** Age, "today" for payment dates and due dates are worked out in IST, not in whatever timezone the server runs in. Otherwise someone turning 23 today could be rejected until 5:30 in the morning.
 
+**The borrower never sees internal vocabulary.** Status names such as `SANCTIONED` and `DISBURSED` are the operations team's. The borrower's tracker says "Approved" and "Money sent", and a rejection reads as a decision with a reason, not an error.
+
 **Listing is by module, not one generic `/loans`.** `GET /sanction/loans` and `POST /sanction/loans/:id/approve` put each team's work under its own prefix. Role checks sit at the prefix, each status change is an explicit named action, and no handler has to work out "may this role make this transition?" from a request body.
 
 ## Tests
@@ -442,6 +448,7 @@ npm test          # 41 unit tests, no database needed
 npm run test:e2e  # 61 end-to-end checks, needs MongoDB (uses its own `lms_test` database)
 ```
 
+- **Browser pass** (a throwaway headless-Chrome script, run before each commit): sign-up, the whole application including a refusal and a retry, sanction rejecting with a reason, the borrower seeing it and applying again, and phone-width layouts.
 - **Unit** (`server/tests/unit`): the rule engine at every boundary (turning 23 today passes, tomorrow fails; ₹24,999.99 fails; a 29 February birthday; IST versus UTC) and the loan maths against hand-calculated values.
 - **End-to-end** (`server/tests/e2e/lifecycle.test.ts`): drives the real API through one loan's whole life, the same path as the demo video: sign-up → BRE fail and pass → upload → apply → sanction → disburse → part-payment → duplicate UTR → final payment → automatic closure. Along the way it checks that every role is refused on every module that is not its own, that a loan cannot skip a step, and both race conditions described above.
 

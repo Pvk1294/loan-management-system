@@ -2,20 +2,15 @@ import { cn } from '@/lib/cn';
 import { formatDate, formatRupees, formatRupeesExact, initials } from '@/lib/format';
 import type { Loan } from '@/types/api';
 
-/** Building blocks for the table cells that the loan modules have in common. */
-
 export function ApplicantCell({ loan }: { loan: Loan }) {
   return (
     <div className="flex items-center gap-3">
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600"
-        aria-hidden="true"
-      >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper-2 text-xs font-semibold text-ink-muted" aria-hidden="true">
         {initials(loan.applicant.fullName)}
       </span>
       <div className="min-w-0">
-        <p className="truncate font-medium text-slate-900">{loan.applicant.fullName}</p>
-        <p className="truncate font-mono text-xs text-slate-500">{loan.reference}</p>
+        <p className="truncate font-medium text-ink">{loan.applicant.fullName}</p>
+        <p className="truncate font-mono text-xs text-ink-faint">{loan.reference}</p>
       </div>
     </div>
   );
@@ -26,19 +21,18 @@ export function Money({ amount, exact = false, className }: { amount: number; ex
 }
 
 export function DateText({ value }: { value: string | null }) {
-  return <span className="whitespace-nowrap text-slate-600">{formatDate(value)}</span>;
+  return <span className="whitespace-nowrap text-ink-muted">{formatDate(value)}</span>;
 }
 
-/** A slim bar showing how much of the loan has been repaid, with the outstanding figure above it. */
 export function OutstandingCell({ loan }: { loan: Loan }) {
   const paidShare = loan.totalRepayment > 0 ? (loan.amountPaid / loan.totalRepayment) * 100 : 0;
   return (
     <div className="w-full max-w-40 md:ml-auto">
-      <p className="font-medium text-slate-900 tabular-nums md:text-right">{formatRupeesExact(loan.outstanding)}</p>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200">
-        <div className="h-full rounded-full bg-emerald-500" style={{ width: `${paidShare}%` }} />
+      <p className="font-medium text-ink tabular-nums md:text-right">{formatRupeesExact(loan.outstanding)}</p>
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-paper-3">
+        <div className="h-full rounded-full bg-brand-600" style={{ width: `${paidShare}%` }} />
       </div>
-      <p className="mt-1 text-xs text-slate-500 tabular-nums md:text-right">{Math.floor(paidShare)}% repaid</p>
+      <p className="mt-1 text-xs text-ink-muted tabular-nums md:text-right">{Math.floor(paidShare)}% repaid</p>
     </div>
   );
 }

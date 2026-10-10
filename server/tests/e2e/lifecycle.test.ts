@@ -425,6 +425,8 @@ describe('sanction → disbursement → collection', () => {
     const loan = res.body.data.loans.find((l: { id: string }) => l.id === loanId);
     expect(loan).toMatchObject({ status: 'APPLIED', borrower: { email: 'meera@example.com' } });
     expect(res.body.meta.counts.queue).toBe(2);
+    // The two applied loans: Meera's ₹1,00,000 and the race tester's ₹75,000.
+    expect(res.body.meta.totals.queuePrincipal).toBe(175_000);
   });
 
   it('refuses to skip a step: an applied loan cannot be disbursed', async () => {

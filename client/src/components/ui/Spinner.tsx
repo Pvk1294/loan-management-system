@@ -9,10 +9,9 @@ export function Spinner({ className }: { className?: string }) {
   );
 }
 
-/** Centred loader for a page or panel that has nothing to show yet. */
 export function PageLoader({ label = 'Loading' }: { label?: string }) {
   return (
-    <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-slate-500" role="status">
+    <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-ink-muted" role="status">
       <Spinner className="h-6 w-6 text-brand-600" />
       <span className="text-sm">{label}…</span>
     </div>
@@ -20,5 +19,5 @@ export function PageLoader({ label = 'Loading' }: { label?: string }) {
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn('animate-pulse rounded-md bg-slate-200/70', className)} aria-hidden="true" />;
+  return <div className={cn('animate-pulse rounded-lg bg-paper-3/70', className)} aria-hidden="true" />;
 }

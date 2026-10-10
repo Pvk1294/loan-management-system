@@ -10,7 +10,6 @@ interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   hint?: string;
 }
 
-/** A password input with a show/hide toggle. */
 export function PasswordField(props: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
@@ -24,7 +23,7 @@ export function PasswordField(props: PasswordFieldProps) {
           onClick={() => setVisible((current) => !current)}
           aria-label={visible ? 'Hide password' : 'Show password'}
           aria-pressed={visible}
-          className="cursor-pointer rounded p-1 text-slate-400 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600"
+          className="cursor-pointer rounded-md p-1.5 text-ink-faint transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-brand-600"
         >
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>

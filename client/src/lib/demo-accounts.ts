@@ -16,10 +16,10 @@ export interface DemoAccount {
 }
 
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
-  { role: 'borrower', label: 'Borrower', sees: 'Application portal', email: 'borrower@lms.dev', password: 'Borrower@123' },
-  { role: 'sales', label: 'Sales', sees: 'Leads', email: 'sales@lms.dev', password: 'Sales@123' },
-  { role: 'sanction', label: 'Sanction', sees: 'Approve or reject', email: 'sanction@lms.dev', password: 'Sanction@123' },
+  { role: 'borrower', label: 'Borrower', sees: 'Apply for a loan and track it', email: 'borrower@lms.dev', password: 'Borrower@123' },
+  { role: 'sales', label: 'Sales', sees: 'Leads who have not applied yet', email: 'sales@lms.dev', password: 'Sales@123' },
+  { role: 'sanction', label: 'Sanction', sees: 'Approve or reject applications', email: 'sanction@lms.dev', password: 'Sanction@123' },
   { role: 'disbursement', label: 'Disbursement', sees: 'Release funds', email: 'disbursement@lms.dev', password: 'Disburse@123' },
-  { role: 'collection', label: 'Collection', sees: 'Record payments', email: 'collection@lms.dev', password: 'Collect@123' },
-  { role: 'admin', label: 'Admin', sees: 'All four modules', email: 'admin@lms.dev', password: 'Admin@123' },
+  { role: 'collection', label: 'Collection', sees: 'Record repayments', email: 'collection@lms.dev', password: 'Collect@123' },
+  { role: 'admin', label: 'Admin', sees: 'Every module', email: 'admin@lms.dev', password: 'Admin@123' },
 ];

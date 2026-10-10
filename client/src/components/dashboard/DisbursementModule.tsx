@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Banknote, CircleCheckBig } from 'lucide-react';
+import { Banknote, CalendarClock, CircleCheckBig, IndianRupee, Inbox } from 'lucide-react';
 import { LoanStatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import type { Column } from '@/components/ui/DataTable';
@@ -10,26 +10,25 @@ import { api } from '@/lib/api';
 import { formatDate, formatRupees, formatRupeesExact, formatTenure } from '@/lib/format';
 import type { Loan } from '@/types/api';
 import { ConfirmModal, SummaryList } from './ConfirmModal';
-import { LoanDrawer } from './LoanDrawer';
+import { LoanDetail } from './LoanDetail';
+import { ModuleFigures } from './ModuleFigures';
+import { ModuleLayout } from './ModuleLayout';
 import { LoanModuleList } from './LoanModuleList';
 import { PageHeader } from './PageHeader';
 import { ApplicantCell, DateText, Money } from './loanCells';
 import { useModuleLoans } from './useModuleLoans';
 
-/** The date `days` from now, for previewing a due date before the server sets the real one. */
 const daysFromNow = (days: number): string => new Date(Date.now() + days * 86_400_000).toISOString();
 
 /**
  * Disbursement: release funds for sanctioned loans.
- *   Mark as disbursed → SANCTIONED becomes DISBURSED, the due date is set from
- *   the tenure, and the loan moves to the Collection queue.
+ *   Mark as disbursed → SANCTIONED becomes DISBURSED, the due date is set
+ *   from the tenure, and the loan moves to Collection.
  */
 export function DisbursementModule() {
   const toast = useToast();
   const loans = useModuleLoans('disbursement');
-  /** The loan open in the details drawer. */
   const [viewing, setViewing] = useState<Loan | null>(null);
-  /** The loan being disbursed, from a row button or from the drawer. */
   const [confirming, setConfirming] = useState<Loan | null>(null);
 
   const disburse = async () => {
@@ -44,17 +43,9 @@ export function DisbursementModule() {
   const isQueue = loans.view === 'queue';
   const columns: Column<Loan>[] = [
     { key: 'applicant', header: 'Applicant', mobile: 'title', cell: (loan) => <ApplicantCell loan={loan} /> },
-    ...(isQueue
-      ? []
-      : [{ key: 'status', header: 'Status', mobile: 'aside', cell: (loan) => <LoanStatusBadge status={loan.status} /> } satisfies Column<Loan>]),
-    {
-      key: 'amount',
-      header: isQueue ? 'Amount to release' : 'Amount released',
-      align: 'right',
-      cell: (loan) => <Money amount={loan.principal} className="font-medium text-slate-900" />,
-    },
-    { key: 'tenure', header: 'Tenure', align: 'right', cell: (loan) => <span className="text-slate-600 tabular-nums">{formatTenure(loan.tenureDays)}</span> },
-    { key: 'total', header: 'Repayment', align: 'right', cell: (loan) => <Money amount={loan.totalRepayment} exact className="text-slate-600" /> },
+    ...(isQueue ? [] : [{ key: 'status', header: 'Status', mobile: 'aside', cell: (loan) => <LoanStatusBadge status={loan.status} /> } satisfies Column<Loan>]),
+    { key: 'amount', header: isQueue ? 'To release' : 'Released', align: 'right', cell: (loan) => <Money amount={loan.principal} className="font-medium text-ink" /> },
+    { key: 'tenure', header: 'Tenure', align: 'right', cell: (loan) => <span className="whitespace-nowrap text-ink-muted tabular-nums">{formatTenure(loan.tenureDays)}</span> },
     ...(isQueue
       ? [
           { key: 'sanctioned', header: 'Sanctioned', cell: (loan) => <DateText value={loan.sanctionedAt} /> } satisfies Column<Loan>,
@@ -63,12 +54,14 @@ export function DisbursementModule() {
             header: '',
             align: 'right',
             mobile: 'footer',
+            className: 'xl:hidden',
             cell: (loan) => (
               <Button
+                variant="ink"
                 size="sm"
                 icon={<Banknote className="h-4 w-4" />}
                 onClick={(event) => {
-                  event.stopPropagation(); // the row itself opens the details drawer
+                  event.stopPropagation();
                   setConfirming(loan);
                 }}
               >
@@ -85,26 +78,41 @@ export function DisbursementModule() {
 
   return (
     <>
-      <PageHeader title="Disbursement" description="Release funds for loans that have been sanctioned." />
-
-      <LoanModuleList
-        loans={loans}
-        columns={columns}
-        onSelect={setViewing}
-        labels={{ queue: 'Ready to disburse', history: 'Disbursed' }}
-        emptyQueue={{ icon: CircleCheckBig, title: 'Nothing to disburse', description: 'Sanctioned loans will appear here as soon as they are approved.' }}
-        caption="Loans for disbursement"
-      />
-
-      <LoanDrawer
-        loan={viewing}
-        onClose={() => setViewing(null)}
-        footer={
-          viewing?.status === 'SANCTIONED' && (
-            <Button icon={<Banknote className="h-4 w-4" />} onClick={() => setConfirming(viewing)}>
-              Mark as disbursed
-            </Button>
-          )
+      <ModuleLayout
+        header={<PageHeader title="Disbursement" description="Release funds for loans that have been sanctioned." />}
+        list={
+          <LoanModuleList
+            loans={loans}
+            columns={columns}
+            onSelect={setViewing}
+            selectedId={viewing?.id ?? null}
+            labels={{ queue: 'Ready to disburse', history: 'Disbursed' }}
+            emptyQueue={{ icon: CircleCheckBig, title: 'Nothing to disburse', description: 'Sanctioned loans appear here as soon as they are approved.' }}
+            caption="Loans for disbursement"
+            figures={
+              <ModuleFigures
+                figures={[
+                  { label: 'Ready to disburse', value: loans.meta?.counts.queue, icon: Inbox, caption: 'sanctioned loans' },
+                  { label: 'To be released', value: loans.meta?.totals.queuePrincipal, money: true, icon: IndianRupee, caption: 'across the queue' },
+                  { label: 'Disbursed so far', value: loans.meta?.counts.history, icon: CalendarClock, caption: 'loans' },
+                ]}
+              />
+            }
+          />
+        }
+        detail={
+          <LoanDetail
+            loan={viewing}
+            onClose={() => setViewing(null)}
+            placeholder={{ title: 'Pick a loan', text: 'Its terms and the applicant will appear here, with the disbursement button below.' }}
+            actions={
+              viewing?.status === 'SANCTIONED' && (
+                <Button variant="ink" icon={<Banknote className="h-4 w-4" />} onClick={() => setConfirming(viewing)}>
+                  Mark as disbursed
+                </Button>
+              )
+            }
+          />
         }
       />
 
@@ -112,7 +120,7 @@ export function DisbursementModule() {
         open={confirming !== null}
         onClose={() => setConfirming(null)}
         title="Disburse this loan?"
-        description="Confirm that the funds have been released to the borrower. Repayment is counted from today."
+        description="Confirm the funds have been released. Repayment is counted from today."
         confirmLabel="Mark as disbursed"
         onConfirm={disburse}
       >
