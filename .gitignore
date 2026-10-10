@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+.next/
+out/
+
+# environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs and OS files
+*.log
+.DS_Store
+
+# local uploads (files are stored in MongoDB GridFS, this is only a safety net)
+uploads/
+
+# test and tooling output
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.vercel/

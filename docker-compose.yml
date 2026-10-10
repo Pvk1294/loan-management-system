@@ -1,0 +1,13 @@
+# Local MongoDB for development. Start it with: docker compose up -d
+services:
+  mongo:
+    image: mongo:8
+    container_name: lms-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - lms-mongo-data:/data/db
+
+volumes:
+  lms-mongo-data:
