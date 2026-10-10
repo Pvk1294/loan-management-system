@@ -1,0 +1,19 @@
+{
+  "name": "loan-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Loan Management System: borrower portal and operations dashboard (Next.js + Express + MongoDB)",
+  "scripts": {
+    "setup": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently -n api,web -c green,cyan \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "seed": "npm run seed --prefix server",
+    "seed:demo": "npm run seed:demo --prefix server",
+    "seed:fresh": "npm run seed:fresh --prefix server",
+    "test": "npm test --prefix server",
+    "test:e2e": "npm run test:e2e --prefix server",
+    "build": "npm run build --prefix server && npm run build --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

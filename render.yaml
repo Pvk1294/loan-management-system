@@ -1,0 +1,26 @@
+# Render blueprint for the API. In Render: New > Blueprint, pick this repository.
+# The frontend is deployed separately on Vercel (root directory: client).
+services:
+  - type: web
+    name: lms-api
+    runtime: node
+    plan: free
+    rootDir: server
+    # devDependencies (TypeScript) are needed to compile, so they are installed explicitly.
+    buildCommand: npm install --include=dev && npm run build
+    # Seeding is safe to repeat: it guarantees the demo logins exist on every start.
+    startCommand: node dist/scripts/seed.js --demo && node dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false # paste your MongoDB Atlas connection string
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: CLIENT_ORIGIN
+        sync: false # the URL of the deployed frontend, e.g. https://your-app.vercel.app
