@@ -6,7 +6,6 @@ import { DocumentViewer } from '@/components/DocumentViewer';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
-import { useToast } from '@/components/ui/Toast';
 import { api, errorMessage } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { formatDateTime, formatFileSize } from '@/lib/format';
@@ -34,7 +33,6 @@ function FileIcon({ mimeType, className }: { mimeType: string; className?: strin
  * also looks at the file's actual content rather than its name.
  */
 export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onUploaded, onContinue, onBack }: SalarySlipStepProps) {
-  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +83,6 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
       const body = new FormData();
       body.append('file', file);
       await api('/borrower/salary-slip', { method: 'POST', body });
-      toast.success('Salary slip uploaded.');
       setFile(null);
       setReplacing(false);
       onUploaded();
@@ -103,6 +100,11 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
         description="Your most recent payslip, so we can confirm your income."
       />
       <CardBody className="space-y-5">
+        {/* Reaching this step means the eligibility check passed; say so. */}
+        <p className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+          You are eligible to apply.
+        </p>
         {error && <Alert tone="error">{error}</Alert>}
 
         {salarySlip && !replacing && (

@@ -6,7 +6,6 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { InputField } from '@/components/ui/Field';
-import { useToast } from '@/components/ui/Toast';
 import { ApiError, api, errorMessage } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { RULE_FIELD, ageFromDateOfBirth, eligibilityHints } from '@/lib/eligibility';
@@ -59,7 +58,6 @@ function findMissing(values: FormValues): Partial<Record<FieldName, string>> {
  *    with the full list of reasons.
  */
 export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }: PersonalDetailsStepProps) {
-  const toast = useToast();
   const [today] = useState(todayInIndia);
   const [values, setValues] = useState<FormValues>({
     fullName: profile?.fullName ?? defaultName,
@@ -105,7 +103,6 @@ export function PersonalDetailsStep({ profile, defaultName, rules, onEligible }:
         },
       });
       setRejection([]);
-      toast.success('You are eligible. Next, upload your salary slip.');
       onEligible();
     } catch (err) {
       if (err instanceof ApiError && err.code === 'BRE_REJECTED') {

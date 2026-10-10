@@ -6,7 +6,6 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { RangeField } from '@/components/ui/RangeField';
-import { useToast } from '@/components/ui/Toast';
 import { api, errorMessage } from '@/lib/api';
 import { formatNumber, formatRupees, formatRupeesExact, formatRupeesShort } from '@/lib/format';
 import { buildLoanQuote } from '@/lib/loan-math';
@@ -30,7 +29,6 @@ const within = (values: number[], min: number, max: number) => values.filter((va
  * again when the loan is created, and that is the figure that is stored.
  */
 export function LoanConfigStep({ rules, onApplied, onBack }: LoanConfigStepProps) {
-  const toast = useToast();
   const [amount, setAmount] = useState(Math.min(rules.MAX_AMOUNT, Math.max(rules.MIN_AMOUNT, 100_000)));
   const [tenureDays, setTenureDays] = useState(Math.min(rules.MAX_TENURE_DAYS, Math.max(rules.MIN_TENURE_DAYS, 90)));
   const [error, setError] = useState<string | null>(null);
@@ -43,8 +41,7 @@ export function LoanConfigStep({ rules, onApplied, onBack }: LoanConfigStepProps
     setSubmitting(true);
     setError(null);
     try {
-      const { loan } = await api<{ loan: Loan }>('/borrower/loans', { method: 'POST', body: { amount, tenureDays } });
-      toast.success(`Application ${loan.reference} submitted.`);
+      await api<{ loan: Loan }>('/borrower/loans', { method: 'POST', body: { amount, tenureDays } });
       onApplied();
     } catch (err) {
       setError(errorMessage(err));

@@ -45,15 +45,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
+      {/*
+        Toasts sit in the bottom corner and let clicks pass through to whatever
+        is underneath; only the dismiss button is interactive. A confirmation
+        must never get in the way of the next action.
+      */}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 p-4 sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-auto sm:items-end sm:p-6"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 p-4 sm:inset-x-auto sm:right-0 sm:items-end sm:p-6"
       >
         {toasts.map((toast) => (
           <div
             key={toast.id}
             role="status"
-            className="pointer-events-auto flex w-full max-w-sm animate-rise items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-raised"
+            className="flex w-full max-w-sm animate-rise items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-raised"
           >
             {toast.tone === 'success' ? (
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
@@ -67,7 +72,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => dismiss(toast.id)}
               aria-label="Dismiss"
-              className="cursor-pointer rounded p-0.5 text-slate-400 hover:text-slate-700"
+              className="pointer-events-auto cursor-pointer rounded p-0.5 text-slate-400 hover:text-slate-700"
             >
               <X className="h-4 w-4" />
             </button>
