@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Brand: a deep green-teal. Change this one scale to re-theme the whole app. */
+  --color-brand-50: #eefbf6;
+  --color-brand-100: #d5f5e9;
+  --color-brand-200: #aeead5;
+  --color-brand-300: #79d8bc;
+  --color-brand-400: #43bf9e;
+  --color-brand-500: #1fa385;
+  --color-brand-600: #12836c;
+  --color-brand-700: #116958;
+  --color-brand-800: #125448;
+  --color-brand-900: #10453c;
+  --color-brand-950: #072722;
+
+  /* The dark surface used by the sidebar and the sign-in panel. */
+  --color-ink-800: #12262a;
+  --color-ink-900: #0b1b1f;
+  --color-ink-950: #061215;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.05);
+  --shadow-raised: 0 4px 6px -2px rgb(15 23 42 / 0.04), 0 12px 24px -6px rgb(15 23 42 / 0.1);
+  --shadow-overlay: 0 24px 60px -12px rgb(6 18 21 / 0.35);
+
+  --animate-fade-in: fade-in 0.2s ease-out both;
+  --animate-rise: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pop: pop 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-in: slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes slide-in {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: #f6f8f8;
+    color: #0f172a;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  ::selection {
+    background: var(--color-brand-200);
+  }
+
+  /* A page behind an open dialog should not scroll. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  dialog {
+    max-width: none;
+    max-height: none;
+  }
+
+  /* Hide the number spinners: amounts are typed, not nudged. */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+/*
+ * Range slider. The filled part of the track is drawn with a gradient whose
+ * stop is the --fill custom property, set from React as a percentage.
+ */
+@layer components {
+  .range {
+    --fill: 0%;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1.75rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  .range:focus {
+    outline: none;
+  }
+
+  .range::-webkit-slider-runnable-track {
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #12836c var(--fill), #e2e8f0 var(--fill));
+  }
+  .range::-moz-range-track {
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #e2e8f0;
+  }
+  .range::-moz-range-progress {
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #12836c;
+  }
+
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: -0.5rem;
+    border-radius: 9999px;
+    background: #fff;
+    border: 2px solid #12836c;
+    box-shadow: 0 2px 6px rgb(15 23 42 / 0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .range::-moz-range-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background: #fff;
+    border: 2px solid #12836c;
+    box-shadow: 0 2px 6px rgb(15 23 42 / 0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .range:hover::-webkit-slider-thumb,
+  .range:active::-webkit-slider-thumb {
+    transform: scale(1.1);
+  }
+  .range:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 5px rgb(18 131 108 / 0.22), 0 2px 6px rgb(15 23 42 / 0.18);
+  }
+  .range:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 5px rgb(18 131 108 / 0.22), 0 2px 6px rgb(15 23 42 / 0.18);
+  }
+
+  /* The faint dot grid behind the sign-in panel. */
+  .dot-grid {
+    background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
