@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
 import { useId } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -86,26 +86,6 @@ export function TextareaField({ label, hint, error, optional, className, id, ...
         className={cn(controlClasses(Boolean(error)), 'min-h-28 resize-y px-4 py-3', className)}
         {...props}
       />
-    </FieldShell>
-  );
-}
-
-type SelectFieldProps = FieldMessages & SelectHTMLAttributes<HTMLSelectElement>;
-
-export function SelectField({ label, hint, error, optional, className, id, children, ...props }: SelectFieldProps) {
-  const generatedId = useId();
-  const inputId = id ?? generatedId;
-
-  return (
-    <FieldShell id={inputId} label={label} hint={hint} error={error} optional={optional}>
-      <select
-        id={inputId}
-        aria-invalid={error ? true : undefined}
-        className={cn(controlClasses(Boolean(error)), 'h-12 px-3', className)}
-        {...props}
-      >
-        {children}
-      </select>
     </FieldShell>
   );
 }

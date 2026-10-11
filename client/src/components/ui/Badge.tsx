@@ -53,7 +53,7 @@ export function LoanStatusBadge({ status, className }: { status: LoanStatus; cla
   );
 }
 
-export const LEAD_STAGE_TONES: Record<LeadStage, Tone> = {
+const LEAD_STAGE_TONES: Record<LeadStage, Tone> = {
   REGISTERED: 'neutral',
   NOT_ELIGIBLE: 'rose',
   ELIGIBLE: 'amber',

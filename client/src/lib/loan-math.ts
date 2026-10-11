@@ -16,7 +16,7 @@ export interface LoanQuote {
 }
 
 /** SI = (P × R × T) / (365 × 100), rounded to the nearest paisa. */
-export function calculateSimpleInterest(principal: number, annualRatePercent: number, tenureDays: number): number {
+function calculateSimpleInterest(principal: number, annualRatePercent: number, tenureDays: number): number {
   return toPaise((principal * annualRatePercent * tenureDays) / (365 * 100)) / 100;
 }
 

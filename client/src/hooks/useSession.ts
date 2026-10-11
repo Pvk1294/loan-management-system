@@ -10,7 +10,7 @@ const noopSubscribe = () => () => {};
  * taken over in the browser. The session lives in the browser only, so until
  * this is true we cannot know whether anyone is logged in.
  */
-export function useHydrated(): boolean {
+function useHydrated(): boolean {
   return useSyncExternalStore(
     noopSubscribe,
     () => true,

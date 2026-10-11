@@ -29,8 +29,6 @@ export const formatRupees = (amount: number): string => wholeRupees.format(amoun
 /** ₹1,02,958.90 — for calculated amounts, always to the paisa. */
 export const formatRupeesExact = (amount: number): string => exactRupees.format(amount);
 
-export const formatNumber = (value: number): string => plainNumber.format(value);
-
 /** ₹50K, ₹1L, ₹2.5L — short labels for slider ticks. */
 export function formatRupeesShort(amount: number): string {
   if (amount >= 100_000) return `₹${plainNumber.format(amount / 100_000)}L`;

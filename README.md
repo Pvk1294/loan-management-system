@@ -152,11 +152,12 @@ Run from the repository root.
 
 ```
 ├── docker-compose.yml        Local MongoDB
-├── render.yaml               Deployment blueprint for the API
+├── render.yaml               Alternative: the API as a long-running server on Render
 │
 ├── server/                   Express API
+│   ├── api/index.js          Entry point when the API runs on Vercel
 │   ├── src/
-│   │   ├── index.ts          Starts the server
+│   │   ├── index.ts          Starts the server (local and long-running hosts)
 │   │   ├── app.ts            Express app: security headers, CORS, JSON, error handling
 │   │   ├── routes.ts         Every route prefix with its role guard, in one place
 │   │   ├── config/           Environment validation, database connection
@@ -456,14 +457,19 @@ The frontend is covered by TypeScript in strict mode and ESLint (`npm run lint -
 
 ## Deployment
 
-Three free services: **MongoDB Atlas** (database), **Render** (API), **Vercel** (web app).
+Both apps run on **Vercel**, as two projects from this one repository, with **MongoDB Atlas** as the database.
 
-1. **MongoDB Atlas** — create a free cluster, add a database user, allow access from anywhere (`0.0.0.0/0`), and copy the connection string.
-2. **Render** — New → Blueprint → select this repository. `render.yaml` configures the service. Set `MONGODB_URI` to the Atlas string, and `CLIENT_ORIGIN` to the Vercel URL once you have it. The start command runs the seed script first, so the demo logins exist as soon as it is live.
-3. **Vercel** — import the repository, set **Root Directory** to `client`, and add `NEXT_PUBLIC_API_URL=https://<your-render-service>.onrender.com/api`.
-4. Back in Render, set `CLIENT_ORIGIN` to the final Vercel URL (no trailing slash) so CORS allows it.
+| Project | Root directory | What Vercel runs |
+|---|---|---|
+| Web app | `client` | Next.js, detected automatically |
+| API | `server` | `npm run build`, then `api/index.js` serves every route (see `server/vercel.json`) |
 
-Render's free plan puts the API to sleep after 15 minutes without traffic, and the first request then takes up to a minute. The login page pings the API as soon as it opens and explains the wait if a sign-in is slow.
+1. **MongoDB Atlas**: create a free cluster and a database user, allow access from anywhere (`0.0.0.0/0`), copy the connection string.
+2. **API project**: import the repository, set Root Directory to `server`, and add `MONGODB_URI`, `JWT_SECRET` (a long random string), `NODE_ENV=production` and `CLIENT_ORIGIN` (the web app's URL, no trailing slash).
+3. **Web project**: import the repository again, set Root Directory to `client`, and add `NEXT_PUBLIC_API_URL=https://<api-project>.vercel.app/api`.
+4. **Seed once** from your machine: `MONGODB_URI="<atlas string>" npm run seed:demo`.
+
+On Vercel the API is a serverless function, so `server/api/index.js` reuses the same Express app and opens the database connection once per warm instance. One platform limit applies: Vercel caps a request body at 4.5 MB, so a salary slip between 4.5 MB and the app's own 5 MB limit is refused by the platform before it reaches the API. `render.yaml` is kept for hosting the API as a long-running server instead, where the full 5 MB applies.
 
 ## Limitations and next steps
 

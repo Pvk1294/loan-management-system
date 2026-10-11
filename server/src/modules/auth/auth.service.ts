@@ -7,7 +7,7 @@ import { ApiError } from '../../utils/ApiError';
 import { isDuplicateKeyError } from '../../utils/mongo';
 import type { LoginInput, SignupInput } from './auth.schema';
 
-export const PASSWORD_SALT_ROUNDS = 10;
+const PASSWORD_SALT_ROUNDS = 10;
 
 export interface AuthResult {
   token: string;

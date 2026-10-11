@@ -37,7 +37,7 @@ function Details({ items }: { items: [label: string, value: ReactNode][] }) {
 }
 
 /** Everything about one loan. The salary slip is offered only to roles the API lets read it. */
-export function LoanDetailBody({ loan, children }: { loan: Loan; children?: ReactNode }) {
+function LoanDetailBody({ loan, children }: { loan: Loan; children?: ReactNode }) {
   const user = useUser();
   const [viewingSlip, setViewingSlip] = useState(false);
   const canViewSlip = user?.role === 'admin' || user?.role === 'sanction';

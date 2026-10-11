@@ -8,7 +8,7 @@ interface BrandProps {
 }
 
 /** The mark: a coin with a rising ledger line. */
-export function BrandMark({ className }: { className?: string }) {
+function BrandMark({ className }: { className?: string }) {
   return (
     <span className={cn('relative flex h-9 w-9 items-center justify-center rounded-full bg-saffron-400 text-ink', className)}>
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

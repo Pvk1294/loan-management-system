@@ -2,7 +2,7 @@ import { getToken, sessionStore } from './session';
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api').replace(/\/$/, '');
 
-export interface FieldError {
+interface FieldError {
   field: string;
   message: string;
 }
