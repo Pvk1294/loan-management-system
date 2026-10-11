@@ -6,7 +6,7 @@ A lending platform with two sides, designed as two products. **Borrowers** get a
 |---|---|
 | **Live app** | https://credo-loans.vercel.app |
 | **API** | https://credo-loans-api.vercel.app/api ([health check](https://credo-loans-api.vercel.app/api/health)) |
-| **Walkthrough video** | _add the video link here_ |
+| **Walkthrough video** | [Watch the 5-minute demo](https://drive.google.com/file/d/1Z4_Be1Srvpl1gZUH-k-m73sYr5v9b0-Y/view?usp=sharing) |
 
 **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind CSS · Node.js · Express 5 · MongoDB · Mongoose · JWT · bcrypt
 
