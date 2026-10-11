@@ -28,7 +28,7 @@ export function UserMenu({ user, tone = 'dark', className }: UserMenuProps) {
       </span>
       <span className="min-w-0 flex-1 leading-tight">
         <span className={cn('block truncate text-sm font-medium', light ? 'text-paper' : 'text-ink')}>{user.name}</span>
-        <span className={cn('block truncate text-xs', light ? 'text-paper/50' : 'text-ink-muted')}>{ROLE_LABELS[user.role]}</span>
+        <span className={cn('block truncate text-xs', light ? 'text-paper/70' : 'text-ink-muted')}>{ROLE_LABELS[user.role]}</span>
       </span>
       <button
         type="button"

@@ -1,9 +1,10 @@
 import { z } from 'zod';
+import { personNameSchema } from '../../utils/validation';
 
 const email = z.string().trim().toLowerCase().pipe(z.email('Enter a valid email address.'));
 
 export const signupSchema = z.object({
-  name: z.string().trim().min(2, 'Name must be at least 2 characters.').max(100),
+  name: personNameSchema,
   email,
   // bcrypt only reads the first 72 bytes of a password, so longer ones are refused.
   password: z

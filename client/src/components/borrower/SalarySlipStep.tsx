@@ -107,7 +107,7 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-ink">{salarySlip.filename}</p>
-              <p className="mt-0.5 text-xs text-ink-muted">
+              <p className="mt-0.5 text-[13px] text-ink-muted">
                 {formatFileSize(salarySlip.size)} · uploaded {formatDateTime(salarySlip.uploadedAt)}
               </p>
             </div>
@@ -162,7 +162,7 @@ export function SalarySlipStep({ salarySlip, maxSizeBytes, allowedMimeTypes, onU
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink">{file.name}</p>
-                  <p className="text-xs text-ink-muted">
+                  <p className="text-[13px] text-ink-muted">
                     {TYPE_LABELS[file.type]} · {formatFileSize(file.size)}
                   </p>
                 </div>

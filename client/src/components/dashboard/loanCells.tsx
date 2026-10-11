@@ -10,7 +10,7 @@ export function ApplicantCell({ loan }: { loan: Loan }) {
       </span>
       <div className="min-w-0">
         <p className="truncate font-medium text-ink">{loan.applicant.fullName}</p>
-        <p className="truncate font-mono text-xs text-ink-faint">{loan.reference}</p>
+        <p className="truncate font-mono text-[13px] text-ink-muted">{loan.reference}</p>
       </div>
     </div>
   );
@@ -32,7 +32,7 @@ export function OutstandingCell({ loan }: { loan: Loan }) {
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-paper-3">
         <div className="h-full rounded-full bg-brand-600" style={{ width: `${paidShare}%` }} />
       </div>
-      <p className="mt-1 text-xs text-ink-muted tabular-nums md:text-right">{Math.floor(paidShare)}% repaid</p>
+      <p className="mt-1 text-[13px] text-ink-muted tabular-nums md:text-right">{Math.floor(paidShare)}% repaid</p>
     </div>
   );
 }

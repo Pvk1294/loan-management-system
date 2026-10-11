@@ -25,7 +25,7 @@ export function PaymentList({ payments, emptyText }: PaymentListProps) {
         <li key={payment.id} className="reveal-fade flex items-center justify-between gap-4 px-4 py-3" style={{ '--i': i } as CSSProperties}>
           <div className="min-w-0">
             <p className="truncate font-mono text-[13px] text-ink">{payment.utr}</p>
-            <p className="mt-0.5 text-xs text-ink-muted">
+            <p className="mt-0.5 text-[13px] text-ink-muted">
               {formatDate(payment.paidAt)}
               {payment.recordedBy && ` · by ${payment.recordedBy.name}`}
             </p>

@@ -114,6 +114,15 @@ describe('authentication', () => {
     );
   });
 
+  it('refuses a phone number or an email typed into the name box', async () => {
+    for (const name of ['9876543210', '+91 98765 43210', 'someone@example.com', 'Meera 2']) {
+      const res = await api().post('/api/auth/signup').send({ name, email: 'name.check@example.com', password: PASSWORD });
+      expect(res.status, name).toBe(400);
+      expect(res.body.error.details[0].field).toBe('name');
+    }
+    expect(await User.exists({ email: 'name.check@example.com' })).toBeNull();
+  });
+
   it('gives the same 401 for a wrong password and an unknown email', async () => {
     const wrongPassword = await api().post('/api/auth/login').send({ email: 'meera@example.com', password: 'Wrong1234' });
     const unknownEmail = await api().post('/api/auth/login').send({ email: 'nobody@example.com', password: PASSWORD });
@@ -614,6 +623,43 @@ describe('sanction → disbursement → collection', () => {
     const overview = await api().get('/api/borrower/application').set(auth('borrower'));
     expect(overview.body.data).toMatchObject({ nextStep: 'LOAN_CONFIG', activeLoan: null });
     expect(overview.body.data.loans).toHaveLength(1);
+  });
+});
+
+describe('returning borrowers', () => {
+  const returning = () => api().get('/api/sales/leads?stage=RETURNING').set(auth(Role.SALES));
+
+  it('a repaid borrower is not a Sales lead until they start again', async () => {
+    const res = await returning();
+    expect(res.body.data.leads).toEqual([]);
+  });
+
+  it('starting a new application records them as a returning lead', async () => {
+    const intent = await api().post('/api/borrower/reapply-intent').set(auth('borrower'));
+    expect(intent.body.data).toEqual({ recorded: true });
+
+    const res = await returning();
+    expect(res.body.data.leads).toHaveLength(1);
+    expect(res.body.data.leads[0]).toMatchObject({ email: 'meera@example.com', stage: 'RETURNING', previousLoans: 1 });
+    expect(res.body.meta.counts.RETURNING).toBe(1);
+  });
+
+  it('does nothing for someone who has never borrowed, or has a loan in progress', async () => {
+    const fresh = await api().post('/api/auth/login').send({ email: 'fresh@example.com', password: PASSWORD });
+    const neverBorrowed = await api().post('/api/borrower/reapply-intent').set('Authorization', `Bearer ${fresh.body.data.token}`);
+    expect(neverBorrowed.body.data).toEqual({ recorded: false });
+
+    const racer = await api().post('/api/auth/login').send({ email: 'racer@example.com', password: PASSWORD });
+    const inProgress = await api().post('/api/borrower/reapply-intent').set('Authorization', `Bearer ${racer.body.data.token}`);
+    expect(inProgress.body.data).toEqual({ recorded: false });
+
+    expect(await api().post('/api/borrower/reapply-intent').set(auth(Role.SALES))).toMatchObject({ status: 403 });
+  });
+
+  it('submitting the new application removes them from Sales', async () => {
+    const applied = await api().post('/api/borrower/loans').set(auth('borrower')).send({ amount: 60_000, tenureDays: 45 });
+    expect(applied.status).toBe(201);
+    expect((await returning()).body.data.leads).toEqual([]);
   });
 });
 

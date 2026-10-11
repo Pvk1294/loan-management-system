@@ -71,7 +71,7 @@ export function LoanProgress({ loan }: { loan: Loan }) {
               <p className={cn('text-sm font-medium', milestone.state === 'upcoming' ? 'text-ink-faint' : milestone.state === 'failed' ? 'text-rose-700' : 'text-ink')}>
                 {milestone.label}
               </p>
-              <p className="mt-0.5 text-xs text-ink-muted">
+              <p className="mt-0.5 text-[13px] text-ink-muted">
                 {milestone.date ? formatDate(milestone.date) : milestone.state === 'current' ? milestone.waitingFor : 'Next'}
               </p>
             </div>

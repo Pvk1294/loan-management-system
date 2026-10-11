@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { type CSSProperties } from 'react';
-import { CircleCheck, FileUp, Mail, SearchX, ServerCrash, UserPlus, UserRoundX, Users } from 'lucide-react';
+import { CircleCheck, FileUp, Mail, Repeat, SearchX, ServerCrash, UserPlus, UserRoundX, Users } from 'lucide-react';
 import { LeadStageBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { type Column, DataTable } from '@/components/ui/DataTable';
@@ -37,6 +37,10 @@ const STAGE_GUIDE: Record<LeadStage, { summary: string; nextStep: string }> = {
   READY_TO_APPLY: {
     summary: 'Eligible, salary slip uploaded. Only the loan request itself is missing.',
     nextStep: 'The warmest kind of lead: help them choose an amount and tenure.',
+  },
+  RETURNING: {
+    summary: 'Has borrowed before, has nothing in progress, and has started a new application.',
+    nextStep: 'A proven customer. Their details are on file, so one call can get the application submitted.',
   },
 };
 
@@ -77,7 +81,7 @@ export function SalesModule() {
           </span>
           <div className="min-w-0">
             <p className="truncate font-medium text-ink">{lead.name}</p>
-            <p className="truncate text-xs text-ink-muted">{lead.email}</p>
+            <p className="truncate text-[13px] text-ink-muted">{lead.email}</p>
           </div>
         </div>
       ),
@@ -102,14 +106,15 @@ export function SalesModule() {
 
   return (
     <>
-      <PageHeader title="Sales" description="People who have registered but have not applied for a loan yet." />
+      <PageHeader title="Sales" description="People who have not applied yet, and past borrowers who have started again." />
 
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatCard index={0} label="All leads" value={counts?.total} icon={Users} onClick={() => filterBy(null)} active={stage === null} className="col-span-2 lg:col-span-1" />
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3 2xl:grid-cols-6">
+        <StatCard index={0} label="All leads" value={counts?.total} icon={Users} onClick={() => filterBy(null)} active={stage === null} />
         <StatCard index={1} label="Registered" value={counts?.REGISTERED} icon={UserPlus} caption="no details yet" onClick={() => filterBy('REGISTERED')} active={stage === 'REGISTERED'} />
         <StatCard index={2} label="Not eligible" value={counts?.NOT_ELIGIBLE} icon={UserRoundX} caption="turned down by the rules" onClick={() => filterBy('NOT_ELIGIBLE')} active={stage === 'NOT_ELIGIBLE'} />
         <StatCard index={3} label="Slip pending" value={counts?.ELIGIBLE} icon={FileUp} caption="eligible, no document" onClick={() => filterBy('ELIGIBLE')} active={stage === 'ELIGIBLE'} />
         <StatCard index={4} label="Ready to apply" value={counts?.READY_TO_APPLY} icon={CircleCheck} caption="warmest leads" onClick={() => filterBy('READY_TO_APPLY')} active={stage === 'READY_TO_APPLY'} />
+        <StatCard index={5} label="Returning" value={counts?.RETURNING} icon={Repeat} caption="past borrowers, back again" onClick={() => filterBy('RETURNING')} active={stage === 'RETURNING'} />
       </div>
 
       <div className="space-y-4">
@@ -185,6 +190,7 @@ function LeadDetails({ lead }: { lead: Lead }) {
     ['Email', lead.email],
     ['Registered', formatDateTime(lead.registeredAt)],
     ['Last activity', formatDateTime(lead.lastActivityAt)],
+    ...(lead.previousLoans > 0 ? ([['Previous loans', String(lead.previousLoans)]] as [string, string][]) : []),
     ...(lead.profile
       ? ([
           ['Name on application', lead.profile.fullName],
@@ -200,7 +206,7 @@ function LeadDetails({ lead }: { lead: Lead }) {
     <div className="space-y-6">
       <div className="rounded-2xl bg-ink p-5 text-paper">
         <p className="text-sm font-medium">{guide.summary}</p>
-        <p className="mt-1.5 text-sm text-paper/60">{guide.nextStep}</p>
+        <p className="mt-1.5 text-sm text-paper/80">{guide.nextStep}</p>
       </div>
 
       {lead.profile && lead.profile.rejectionReasons.length > 0 && (

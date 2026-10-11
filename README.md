@@ -81,7 +81,7 @@ The seed script creates one account per role. On the login page these are also o
 
 | Module | Works on | Actions |
 |---|---|---|
-| **Sales** | Borrowers who registered but have not applied | Lead list with stage (registered, not eligible, slip pending, ready to apply), funnel counts, search, the reasons a lead was turned down |
+| **Sales** | Borrowers who registered but have not applied, and repaid borrowers who have started a new application | Lead list with stage (registered, not eligible, slip pending, ready to apply, returning), funnel counts, search, the reasons a lead was turned down |
 | **Sanction** | `APPLIED` loans | Review the applicant and the salary slip, then **approve** or **reject with a reason** |
 | **Disbursement** | `SANCTIONED` loans | **Mark as disbursed**, which sets the due date from the tenure |
 | **Collection** | `DISBURSED` loans | **Record a payment** (unique UTR, amount, date). The loan **closes automatically** when it is paid in full |
@@ -446,7 +446,7 @@ The assignment leaves the schema, the API and several rules open. These are the 
 
 ```bash
 npm test          # 41 unit tests, no database needed
-npm run test:e2e  # 61 end-to-end checks, needs MongoDB (uses its own `lms_test` database)
+npm run test:e2e  # 66 end-to-end checks, needs MongoDB (uses its own `lms_test` database)
 ```
 
 - **Browser pass** (a throwaway headless-Chrome script, run before each commit): sign-up, the whole application including a refusal and a retry, sanction rejecting with a reason, the borrower seeing it and applying again, and phone-width layouts.
@@ -479,5 +479,6 @@ Things left out on purpose to keep the core flow complete, and what would come n
 - **Payment and running total are two writes.** They are kept consistent by the guarded update and a compensating delete, but a crash between the two could leave a ledger row not yet reflected in `amountPaid`. With a replica set this would be one transaction.
 - **No interest after the due date.** Overdue loans are flagged in Collection, but no penalty accrues.
 - **Sales is read-only.** A natural next step is notes and follow-up status on each lead.
+- **Repayment is by bank transfer.** The borrower is shown account details and Collection records the payment by UTR. Next: let the borrower submit a payment proof for Collection to verify, or take payments through a gateway.
 - **PAN is not unique across borrowers**, so the same sample PAN can be used to test several accounts. A real lender would enforce it.
 - **No password reset or email verification**, and no automated browser tests for the frontend.

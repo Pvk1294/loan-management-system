@@ -28,7 +28,7 @@ function Details({ items }: { items: [label: string, value: ReactNode][] }) {
     <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
       {items.map(([label, value]) => (
         <div key={label} className="min-w-0">
-          <dt className="text-xs text-ink-muted">{label}</dt>
+          <dt className="text-[13px] text-ink-muted">{label}</dt>
           <dd className="mt-0.5 truncate text-sm font-medium text-ink">{value}</dd>
         </div>
       ))}
@@ -48,11 +48,11 @@ function LoanDetailBody({ loan, children }: { loan: Loan; children?: ReactNode }
       <DetailSection title="Loan">
         <div className="mb-4 flex items-end justify-between gap-4 rounded-2xl bg-paper p-4">
           <div>
-            <p className="text-xs text-ink-muted">Requested</p>
+            <p className="text-[13px] text-ink-muted">Requested</p>
             <p className="amount mt-0.5 text-[28px] leading-none text-ink">{formatRupees(loan.principal)}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-ink-muted">To repay</p>
+            <p className="text-[13px] text-ink-muted">To repay</p>
             <p className="amount mt-0.5 text-xl leading-none text-ink">{formatRupeesExact(loan.totalRepayment)}</p>
           </div>
         </div>
@@ -99,7 +99,7 @@ function LoanDetailBody({ loan, children }: { loan: Loan; children?: ReactNode }
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-ink">{loan.salarySlip.filename}</p>
-              <p className="text-xs text-ink-muted">
+              <p className="text-[13px] text-ink-muted">
                 {formatFileSize(loan.salarySlip.size)} · {formatDate(loan.salarySlip.uploadedAt)}
               </p>
             </div>

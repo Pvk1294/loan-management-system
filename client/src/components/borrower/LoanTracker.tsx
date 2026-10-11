@@ -88,9 +88,9 @@ export function LoanTracker({ loan, onStartNew }: LoanTrackerProps) {
             <Icon className="h-7 w-7" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold tracking-[0.14em] text-paper/50 uppercase">{headline.eyebrow}</p>
+            <p className="text-xs font-semibold tracking-[0.12em] text-paper/75 uppercase">{headline.eyebrow}</p>
             <h1 className="display mt-2 text-[32px] leading-tight">{headline.title}</h1>
-            <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-paper/65">{headline.text(loan)}</p>
+            <p className="mt-3 max-w-xl text-base leading-relaxed text-paper/85">{headline.text(loan)}</p>
           </div>
           {onStartNew && (
             <Button variant="accent" onClick={onStartNew} icon={<Plus className="h-4 w-4" />} className="sm:self-center">
@@ -113,6 +113,7 @@ export function LoanTracker({ loan, onStartNew }: LoanTrackerProps) {
                 <h3 className="mb-2 text-[11px] font-semibold tracking-[0.14em] text-ink-muted uppercase">Payments received</h3>
                 <PaymentList payments={data?.payments} emptyText="No payments yet." />
               </div>
+              {loan.status === 'DISBURSED' && <HowToRepay loan={loan} />}
             </CardBody>
           </Card>
         )}
@@ -123,7 +124,7 @@ export function LoanTracker({ loan, onStartNew }: LoanTrackerProps) {
             <dl className={cn('grid grid-cols-2 gap-x-6 gap-y-5', !hasRepayments && 'sm:grid-cols-3')}>
               {terms.map(([label, value]) => (
                 <div key={label}>
-                  <dt className="text-xs text-ink-muted">{label}</dt>
+                  <dt className="text-[13px] text-ink-muted">{label}</dt>
                   <dd className={cn('mt-1 text-sm font-medium text-ink', label === 'Reference' && 'font-mono text-xs')}>{value}</dd>
                 </div>
               ))}
@@ -131,6 +132,38 @@ export function LoanTracker({ loan, onStartNew }: LoanTrackerProps) {
           </CardBody>
         </Card>
       </div>
+    </div>
+  );
+}
+
+/** Demo bank details. Repayments are made by bank transfer and recorded by the Collection team. */
+const REPAYMENT_ACCOUNT: [string, string][] = [
+  ['Account name', 'Credo Finance (demo)'],
+  ['Account number', '0000 1234 5678'],
+  ['IFSC', 'DEMO0001234'],
+];
+
+/**
+ * Tells the borrower how to repay. Payments are not taken in the app: the
+ * borrower transfers the money, and the Collection team records it against the
+ * loan with the bank's UTR, at which point it appears in the list above.
+ */
+function HowToRepay({ loan }: { loan: Loan }) {
+  return (
+    <div className="rounded-2xl border border-line bg-paper/60 p-5">
+      <h3 className="text-[15px] font-semibold text-ink">How to repay</h3>
+      <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+        Transfer any amount up to {formatRupeesExact(loan.outstanding)} by UPI, NEFT or IMPS. Your payment appears here once our team
+        has matched it, usually the same day.
+      </p>
+      <dl className="mt-4 space-y-2 text-sm">
+        {[...REPAYMENT_ACCOUNT, ['Payment reference', loan.reference] as [string, string]].map(([label, value]) => (
+          <div key={label} className="flex items-center justify-between gap-4">
+            <dt className="text-ink-muted">{label}</dt>
+            <dd className="font-mono text-[13px] font-medium text-ink select-all">{value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }

@@ -144,7 +144,7 @@ export interface ModuleLoanMeta extends PageMeta {
   totals: { queuePrincipal: number; queueOutstanding: number };
 }
 
-export type LeadStage = 'REGISTERED' | 'NOT_ELIGIBLE' | 'ELIGIBLE' | 'READY_TO_APPLY';
+export type LeadStage = 'REGISTERED' | 'NOT_ELIGIBLE' | 'ELIGIBLE' | 'READY_TO_APPLY' | 'RETURNING';
 
 export interface Lead {
   id: string;
@@ -153,6 +153,7 @@ export interface Lead {
   stage: LeadStage;
   registeredAt: string;
   lastActivityAt: string;
+  previousLoans: number;
   profile: {
     fullName: string;
     monthlySalary: number;

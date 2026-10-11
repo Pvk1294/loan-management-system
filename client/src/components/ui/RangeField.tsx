@@ -78,7 +78,7 @@ export function RangeField({ label, value, min, max, step, onChange, prefix, suf
           onChange(Number(event.target.value));
         }}
       />
-      <div className="flex justify-between text-xs text-ink-faint tabular-nums">
+      <div className="flex justify-between text-[13px] text-ink-muted tabular-nums">
         <span>{formatBound(min)}</span>
         <span>{formatBound(max)}</span>
       </div>

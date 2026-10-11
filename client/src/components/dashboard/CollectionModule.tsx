@@ -8,6 +8,7 @@ import { Badge, LoanStatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import type { Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Dialog';
+import { DateField } from '@/components/ui/DateField';
 import { InputField } from '@/components/ui/Field';
 import { useToast } from '@/components/ui/Toast';
 import { useApiQuery } from '@/hooks/useApiQuery';
@@ -246,15 +247,15 @@ function PaymentForm({ loan, onCancel, onRecorded }: PaymentFormProps) {
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <dl className="grid grid-cols-3 gap-3 rounded-2xl bg-paper p-4 text-center">
         <div>
-          <dt className="text-xs text-ink-muted">To repay</dt>
+          <dt className="text-[13px] text-ink-muted">To repay</dt>
           <dd className="amount mt-1 text-base text-ink">{formatRupeesExact(loan.totalRepayment)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-ink-muted">Paid</dt>
+          <dt className="text-[13px] text-ink-muted">Paid</dt>
           <dd className="amount mt-1 text-base text-brand-700">{formatRupeesExact(loan.amountPaid)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-ink-muted">Outstanding</dt>
+          <dt className="text-[13px] text-ink-muted">Outstanding</dt>
           <dd className="amount mt-1 text-base text-ink">{formatRupeesExact(loan.outstanding)}</dd>
         </div>
       </dl>
@@ -308,15 +309,13 @@ function PaymentForm({ loan, onCancel, onRecorded }: PaymentFormProps) {
         </button>
       </div>
 
-      <InputField
+      <DateField
         label="Payment date"
-        name="paidAt"
-        type="date"
         min={disbursedOn}
         max={today}
         value={paidAt}
-        onChange={(event) => {
-          setPaidAt(event.target.value);
+        onChange={(value) => {
+          setPaidAt(value);
           setErrors((current) => ({ ...current, paidAt: undefined }));
         }}
         error={errors.paidAt}

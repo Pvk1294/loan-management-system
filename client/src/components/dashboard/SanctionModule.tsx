@@ -67,7 +67,7 @@ export function SanctionModule() {
       cell: (loan) => (
         <div>
           <Money amount={loan.applicant.monthlySalary} className="text-ink" />
-          <p className="text-xs text-ink-muted">{EMPLOYMENT_LABELS[loan.applicant.employmentMode]}</p>
+          <p className="text-[13px] text-ink-muted">{EMPLOYMENT_LABELS[loan.applicant.employmentMode]}</p>
         </div>
       ),
     },

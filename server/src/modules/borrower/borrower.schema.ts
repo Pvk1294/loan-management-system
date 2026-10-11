@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { EMPLOYMENT_MODES, LOAN_RULES } from '../../constants/loan';
 import { normalizePan } from '../../services/bre';
 import { parseDateOnly } from '../../utils/dates';
+import { personNameSchema } from '../../utils/validation';
 
 /**
  * Shape checks only: is every field present and of the right type?
@@ -9,12 +10,7 @@ import { parseDateOnly } from '../../utils/dates';
  * a business decision and is left to the rule engine, which answers with 422.
  */
 export const profileSchema = z.object({
-  fullName: z
-    .string()
-    .trim()
-    .min(2, 'Full name must be at least 2 characters.')
-    .max(100)
-    .regex(/^[A-Za-z][A-Za-z .'-]*$/, 'Full name may only contain letters, spaces, dots, apostrophes and hyphens.'),
+  fullName: personNameSchema,
   pan: z.string().min(1, 'PAN is required.').max(20).transform(normalizePan),
   dateOfBirth: z
     .string()

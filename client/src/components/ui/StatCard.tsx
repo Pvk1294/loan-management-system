@@ -35,7 +35,7 @@ export function StatCard({ label, value, format, icon: Icon, caption, onClick, a
       ) : (
         <p className="amount mt-1 text-[28px] leading-none text-ink">{text}</p>
       )}
-      {caption && <p className="mt-2 text-xs text-ink-faint">{caption}</p>}
+      {caption && <p className="mt-2 text-[13px] text-ink-muted">{caption}</p>}
     </>
   );
 

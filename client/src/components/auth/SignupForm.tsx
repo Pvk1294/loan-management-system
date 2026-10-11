@@ -9,6 +9,7 @@ import { InputField } from '@/components/ui/Field';
 import { ApiError, errorMessage } from '@/lib/api';
 import { signup } from '@/lib/auth';
 import { cn } from '@/lib/cn';
+import { nameProblem } from '@/lib/validation';
 import { PasswordField } from './PasswordField';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,7 +35,8 @@ export function SignupForm() {
 
   const validate = (): Partial<Record<Fields, string>> => {
     const found: Partial<Record<Fields, string>> = {};
-    if (values.name.trim().length < 2) found.name = 'Enter your full name.';
+    const nameError = nameProblem(values.name);
+    if (nameError) found.name = nameError;
     if (!EMAIL_REGEX.test(values.email.trim())) found.email = 'Enter a valid email address.';
     if (!PASSWORD_RULES.every((rule) => rule.test(values.password))) found.password = 'Choose a password that meets all three rules.';
     return found;

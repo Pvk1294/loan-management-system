@@ -150,7 +150,7 @@ export function DataTable<T>({ columns, rows, rowKey, onRowClick, selectedKey, l
                   <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-line pt-3">
                     {byMobile('detail').map((column) => (
                       <div key={column.key} className="min-w-0">
-                        <dt className="text-xs text-ink-muted">{column.header}</dt>
+                        <dt className="text-[13px] text-ink-muted">{column.header}</dt>
                         <dd className="mt-0.5 text-sm text-ink">{column.cell(row)}</dd>
                       </div>
                     ))}

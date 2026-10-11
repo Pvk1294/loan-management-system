@@ -57,7 +57,7 @@ export function OfferPanel() {
             before you sign anything.
           </span>
         </h1>
-        <p className="reveal mt-5 max-w-md text-[15px] leading-relaxed text-paper/60" style={{ '--i': 3 } as CSSProperties}>
+        <p className="reveal mt-5 max-w-md text-base leading-relaxed text-paper/80" style={{ '--i': 3 } as CSSProperties}>
           Pick an amount and a tenure, see exactly what you will repay, and follow your application from the moment
           you submit it until the day it closes.
         </p>
@@ -65,7 +65,7 @@ export function OfferPanel() {
         {/* The example-loan card */}
         <div className="reveal mt-10 max-w-md" style={{ '--i': 4 } as CSSProperties}>
           <div className="animate-float rounded-[22px] border border-white/10 bg-white/[0.06] p-6 shadow-overlay backdrop-blur-sm">
-            <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.14em] text-paper/45 uppercase">
+            <div className="flex items-center justify-between text-xs font-semibold tracking-[0.12em] text-paper/70 uppercase">
               <span>For example</span>
               <span className="flex gap-1" aria-hidden="true">
                 {EXAMPLES.map((_, i) => (
@@ -73,12 +73,12 @@ export function OfferPanel() {
                 ))}
               </span>
             </div>
-            <p className="mt-3 text-sm text-paper/70">
+            <p className="mt-3 text-[15px] text-paper/85">
               Borrow <span className="amount text-lg text-paper">{formatRupees(principal)}</span> for{' '}
               <span className="amount text-lg text-paper">{Math.round(days)}</span> days
             </p>
             <p className="amount mt-3 text-[40px] leading-none text-saffron-300">{formatRupeesExact(total)}</p>
-            <p className="mt-2 text-sm text-paper/55">
+            <p className="mt-2 text-[15px] text-paper/80">
               to repay in one go, of which {formatRupeesExact(interest)} is interest
             </p>
           </div>
@@ -89,7 +89,7 @@ export function OfferPanel() {
         {PROMISES.map((promise, i) => (
           <div key={promise.figure} className="reveal" style={{ '--i': 5 + i } as CSSProperties}>
             <dt className="amount text-[30px] leading-none text-paper">{promise.figure}</dt>
-            <dd className="mt-2 text-[13px] leading-snug text-paper/50">{promise.text}</dd>
+            <dd className="mt-2 text-sm leading-snug text-paper/75">{promise.text}</dd>
           </div>
         ))}
       </dl>

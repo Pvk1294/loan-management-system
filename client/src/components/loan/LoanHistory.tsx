@@ -29,7 +29,7 @@ export function LoanHistory({ history }: { history: StatusChange[] }) {
             </div>
             <div className={cn('min-w-0', !isLast && 'pb-5')}>
               <p className="text-sm font-medium text-ink">{LOAN_STATUS_LABELS[change.status]}</p>
-              <p className="mt-0.5 text-xs text-ink-muted">
+              <p className="mt-0.5 text-[13px] text-ink-muted">
                 {formatDateTime(change.changedAt)}
                 {change.changedBy && ` · ${change.changedBy.name} (${ROLE_LABELS[change.changedBy.role]})`}
               </p>

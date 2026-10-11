@@ -201,12 +201,33 @@ export async function applyForLoan(userId: string, { amount, tenureDays }: LoanA
       appliedAt: now,
       statusHistory: [{ status: LoanStatus.APPLIED, changedAt: now, changedBy: userId }],
     });
+    // They have applied, so they are no longer a returning lead for Sales.
+    if (profile.reapplyRequestedAt) {
+      profile.reapplyRequestedAt = undefined;
+      await profile.save();
+    }
     return toLoanDTO(loan);
   } catch (err) {
     // Two "Apply" requests at once: the partial unique index lets only one through.
     if (isDuplicateKeyError(err)) throw activeLoanConflict();
     throw err;
   }
+}
+
+/**
+ * Notes that a past borrower has started a new application, so Sales can
+ * follow up if they do not finish it. Only meaningful for someone who has
+ * borrowed before and has nothing in progress; otherwise it does nothing.
+ */
+export async function recordReapplyIntent(userId: string): Promise<{ recorded: boolean }> {
+  const [hasPastLoan, hasActiveLoan] = await Promise.all([
+    Loan.exists({ borrower: userId }),
+    Loan.exists({ borrower: userId, status: { $in: ACTIVE_LOAN_STATUSES } }),
+  ]);
+  if (!hasPastLoan || hasActiveLoan) return { recorded: false };
+
+  const updated = await BorrowerProfile.updateOne({ user: userId }, { $set: { reapplyRequestedAt: new Date() } });
+  return { recorded: updated.matchedCount === 1 };
 }
 
 export async function listOwnLoans(userId: string): Promise<LoanDTO[]> {

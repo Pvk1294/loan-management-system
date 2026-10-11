@@ -23,6 +23,10 @@ export async function applyForLoan(req: Request, res: Response): Promise<void> {
   res.status(201).json({ data: { loan } });
 }
 
+export async function recordReapplyIntent(req: Request, res: Response): Promise<void> {
+  res.json({ data: await borrowerService.recordReapplyIntent(currentUser(req).id) });
+}
+
 export async function listLoans(req: Request, res: Response): Promise<void> {
   res.json({ data: { loans: await borrowerService.listOwnLoans(currentUser(req).id) } });
 }

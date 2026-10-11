@@ -60,7 +60,7 @@ export function LoanConfigStep({ rules, onApplied, onBack }: LoanConfigStepProps
         className="sticky top-16 z-10 -mx-5 -mt-2 flex items-center justify-between gap-4 border-b border-line/70 bg-paper/85 px-5 py-3 backdrop-blur-md sm:-mx-8 sm:px-8 lg:hidden"
         aria-hidden="true"
       >
-        <span className="text-xs text-ink-muted">
+        <span className="text-[13px] text-ink-muted">
           You repay
           <span className="block text-[11px] text-ink-faint">incl. {formatRupeesExact(interest)} interest</span>
         </span>
@@ -101,57 +101,57 @@ export function LoanConfigStep({ rules, onApplied, onBack }: LoanConfigStepProps
       </Card>
 
       <aside className="reveal" style={{ '--i': 1 } as CSSProperties}>
-        <div className="relative overflow-hidden rounded-[22px] bg-ink text-paper shadow-raised lg:sticky lg:top-24">
-          <div className="ruled-light absolute inset-0" aria-hidden="true" />
-          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-brand-600/40 blur-3xl" aria-hidden="true" />
+        {/* A light card on purpose: every figure and every line of small print is dark text on a pale surface. */}
+        <div className="overflow-hidden rounded-[22px] border border-line bg-white shadow-raised lg:sticky lg:top-24">
+          <div className="border-b border-saffron-200 bg-saffron-100/60 px-7 py-6" aria-live="polite">
+            <p className="text-[13px] font-semibold tracking-[0.1em] text-ink-muted uppercase">You repay</p>
+            <p className="amount mt-1.5 text-[42px] leading-none text-ink">{formatRupeesExact(total)}</p>
+            <p className="mt-2.5 text-[15px] text-ink-2">in one payment, {tenureDays} days after the money reaches you</p>
+          </div>
 
-          <div className="relative p-7" aria-live="polite">
-            <p className="text-[11px] font-semibold tracking-[0.14em] text-paper/50 uppercase">You repay</p>
-            <p className="amount mt-2 text-[42px] leading-none text-saffron-300">{formatRupeesExact(total)}</p>
-            <p className="mt-2.5 text-sm text-paper/55">in one payment, {tenureDays} days after the money reaches you</p>
-
-            <div className="mt-7 flex h-2 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
-              <div className="h-full bg-paper/80 transition-[width] duration-300" style={{ width: `${100 - interestShare}%` }} />
-              <div className="h-full bg-saffron-400 transition-[width] duration-300" style={{ width: `${Math.max(interestShare, 1.5)}%` }} />
+          <div className="px-7 py-6">
+            <div className="flex h-2.5 overflow-hidden rounded-full bg-paper-3" aria-hidden="true">
+              <div className="h-full bg-brand-600 transition-[width] duration-300" style={{ width: `${100 - interestShare}%` }} />
+              <div className="h-full bg-saffron-500 transition-[width] duration-300" style={{ width: `${Math.max(interestShare, 1.5)}%` }} />
             </div>
 
-            <dl className="mt-5 space-y-3 text-sm">
+            <dl className="mt-5 space-y-3.5 text-base">
               <div className="flex items-center justify-between gap-4">
-                <dt className="flex items-center gap-2 text-paper/60">
-                  <span className="h-2 w-2 rounded-full bg-paper/80" aria-hidden="true" />
+                <dt className="flex items-center gap-2.5 text-ink-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-brand-600" aria-hidden="true" />
                   You borrow
                 </dt>
-                <dd className="amount text-lg">{formatRupees(amount)}</dd>
+                <dd className="amount text-xl text-ink">{formatRupees(amount)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="flex items-center gap-2 text-paper/60">
-                  <span className="h-2 w-2 rounded-full bg-saffron-400" aria-hidden="true" />
+                <dt className="flex items-center gap-2.5 text-ink-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-saffron-500" aria-hidden="true" />
                   Interest, {rules.ANNUAL_INTEREST_RATE}% a year
                 </dt>
-                <dd className="amount text-lg">{formatRupeesExact(interest)}</dd>
+                <dd className="amount text-xl text-ink">{formatRupeesExact(interest)}</dd>
               </div>
-              <div className="flex items-center justify-between gap-4 border-t border-white/10 pt-3">
-                <dt className="text-paper/60">That is, per day</dt>
-                <dd className="amount text-lg">{formatRupeesExact(perDay)}</dd>
+              <div className="flex items-center justify-between gap-4 border-t border-line pt-3.5">
+                <dt className="text-ink-2">That is, per day</dt>
+                <dd className="amount text-xl text-ink">{formatRupeesExact(perDay)}</dd>
               </div>
             </dl>
 
-            <p className="mt-5 text-xs leading-relaxed text-paper/45">
+            <p className="mt-5 rounded-xl bg-paper px-4 py-3 text-sm leading-relaxed text-ink-2">
               Simple interest, charged only for the days you borrow. No processing fee, no other charges.
             </p>
           </div>
 
-          <div className="relative border-t border-white/10 bg-white/[0.04] p-7">
+          <div className="border-t border-line bg-paper/60 px-7 py-6">
             {error && (
               <Alert tone="error" className="mb-4">
                 {error}
               </Alert>
             )}
-            <Button variant="accent" size="lg" fullWidth loading={submitting} onClick={apply}>
+            <Button variant="ink" size="lg" fullWidth loading={submitting} onClick={apply}>
               Apply for {formatRupees(amount)}
               <ArrowRight className="h-4 w-4" />
             </Button>
-            <p className="mt-3 text-center text-xs text-paper/45">We review every application by hand. Usually within a day.</p>
+            <p className="mt-3 text-center text-sm text-ink-2">We review every application by hand. Usually within a day.</p>
           </div>
         </div>
       </aside>

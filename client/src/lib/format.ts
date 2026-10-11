@@ -93,4 +93,5 @@ export const LEAD_STAGE_LABELS: Record<LeadStage, string> = {
   NOT_ELIGIBLE: 'Not eligible',
   ELIGIBLE: 'Slip pending',
   READY_TO_APPLY: 'Ready to apply',
+  RETURNING: 'Returning',
 };

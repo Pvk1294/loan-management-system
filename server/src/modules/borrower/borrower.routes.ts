@@ -9,5 +9,6 @@ borrowerRouter.get('/application', borrowerController.getApplication);
 borrowerRouter.put('/profile', borrowerController.submitProfile);
 borrowerRouter.post('/salary-slip', salarySlipUpload, borrowerController.uploadSalarySlip);
 borrowerRouter.post('/loans', borrowerController.applyForLoan);
+borrowerRouter.post('/reapply-intent', borrowerController.recordReapplyIntent);
 borrowerRouter.get('/loans', borrowerController.listLoans);
 borrowerRouter.get('/loans/:id', borrowerController.getLoan);

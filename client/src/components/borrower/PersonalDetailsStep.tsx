@@ -5,11 +5,13 @@ import { ArrowRight, Briefcase, Clock3, Lock, Store, UserRoundX } from 'lucide-r
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
+import { DateField } from '@/components/ui/DateField';
 import { InputField } from '@/components/ui/Field';
 import { ApiError, api, errorMessage } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PAN_REGEX, RULE_FIELD } from '@/lib/eligibility';
 import { EMPLOYMENT_LABELS, formatRupees, todayInIndia } from '@/lib/format';
+import { nameProblem } from '@/lib/validation';
 import type { BreFailure, EmploymentMode, Profile } from '@/types/api';
 
 interface PersonalDetailsStepProps {
@@ -43,8 +45,9 @@ const WHY_WE_ASK = [
 /** Shape checks only: is everything filled in and well-formed? Eligibility is the server's call. */
 function findProblems(values: FormValues): Partial<Record<FieldName, string>> {
   const errors: Partial<Record<FieldName, string>> = {};
-  if (values.fullName.trim().length < 2) errors.fullName = 'Enter your full name.';
-  if (!PAN_REGEX.test(values.pan.trim())) errors.pan = 'A PAN has 5 letters, 4 digits and 1 letter, like ABCDE1234F.';
+  const nameError = nameProblem(values.fullName);
+  if (nameError) errors.fullName = nameError;
+  if (!PAN_REGEX.test(values.pan.trim())) errors.pan = 'This is an invalid PAN. Please enter a valid PAN.';
   if (!values.dateOfBirth) errors.dateOfBirth = 'Enter your date of birth.';
   if (values.monthlySalary === '' || !Number.isFinite(Number(values.monthlySalary)) || Number(values.monthlySalary) < 0) {
     errors.monthlySalary = 'Enter your monthly salary.';
@@ -155,14 +158,12 @@ export function PersonalDetailsStep({ profile, defaultName, onEligible }: Person
                 onChange={(event) => set('pan', event.target.value.toUpperCase().replace(/\s/g, ''))}
                 error={errors.pan}
               />
-              <InputField
+              <DateField
                 label="Date of birth"
-                name="dateOfBirth"
-                type="date"
                 max={today}
-                className={highlight('dateOfBirth')}
+                flagged={refusedFields.has('dateOfBirth')}
                 value={values.dateOfBirth}
-                onChange={(event) => set('dateOfBirth', event.target.value)}
+                onChange={(value) => set('dateOfBirth', value)}
                 error={errors.dateOfBirth}
               />
               <InputField
@@ -220,7 +221,7 @@ export function PersonalDetailsStep({ profile, defaultName, onEligible }: Person
                       </span>
                       <span className="leading-tight">
                         <span className="block text-sm font-medium text-ink">{EMPLOYMENT_LABELS[value]}</span>
-                        <span className="mt-0.5 block text-xs text-ink-muted">{caption}</span>
+                        <span className="mt-0.5 block text-[13px] text-ink-muted">{caption}</span>
                       </span>
                     </label>
                   );
@@ -230,7 +231,7 @@ export function PersonalDetailsStep({ profile, defaultName, onEligible }: Person
             </fieldset>
 
             <div className="flex flex-col-reverse items-stretch gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <p className="flex items-center gap-1.5 text-xs text-ink-muted">
+              <p className="flex items-center gap-1.5 text-[13px] text-ink-muted">
                 <Lock className="h-3.5 w-3.5" aria-hidden="true" />
                 Checked securely on our servers. Nothing is shared.
               </p>
@@ -244,17 +245,17 @@ export function PersonalDetailsStep({ profile, defaultName, onEligible }: Person
       </Card>
 
       <aside className="reveal space-y-4" style={{ '--i': 2 } as CSSProperties}>
-        <div className="rounded-[20px] bg-ink p-6 text-paper">
-          <p className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-paper/50 uppercase">
-            <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+        <div className="rounded-[20px] border border-saffron-200 bg-saffron-100/50 p-6">
+          <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.1em] text-saffron-600 uppercase">
+            <Clock3 className="h-4 w-4" aria-hidden="true" />
             About two minutes
           </p>
-          <p className="display mt-3 text-xl leading-snug">Why we ask for these</p>
-          <dl className="mt-4 space-y-3.5">
+          <p className="display mt-3 text-[22px] leading-snug text-ink">Why we ask for these</p>
+          <dl className="mt-4 divide-y divide-saffron-200">
             {WHY_WE_ASK.map((item) => (
-              <div key={item.title}>
-                <dt className="text-sm font-medium text-saffron-300">{item.title}</dt>
-                <dd className="mt-0.5 text-[13px] leading-relaxed text-paper/60">{item.text}</dd>
+              <div key={item.title} className="py-3 first:pt-0 last:pb-0">
+                <dt className="text-[15px] font-semibold text-ink">{item.title}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-ink-muted">{item.text}</dd>
               </div>
             ))}
           </dl>

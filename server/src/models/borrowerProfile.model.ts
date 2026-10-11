@@ -42,6 +42,11 @@ export interface IBorrowerProfile {
   employmentMode: EmploymentMode;
   bre: IBreOutcome;
   salarySlip?: ISalarySlip;
+  /**
+   * Set when a borrower with a finished loan starts a new application, and
+   * cleared when they submit it. While set, Sales sees them as a returning lead.
+   */
+  reapplyRequestedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -83,6 +88,7 @@ const borrowerProfileSchema = new Schema<IBorrowerProfile>(
     employmentMode: { type: String, enum: EMPLOYMENT_MODES, required: true },
     bre: { type: breOutcomeSchema, required: true },
     salarySlip: { type: salarySlipSchema },
+    reapplyRequestedAt: { type: Date },
   },
   { timestamps: true },
 );

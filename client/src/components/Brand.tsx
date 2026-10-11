@@ -26,7 +26,7 @@ export function Brand({ tone = 'dark', subtitle, className }: BrandProps) {
       <span className="leading-none">
         <span className={cn('display block text-[20px]', tone === 'light' ? 'text-paper' : 'text-ink')}>Credo</span>
         {subtitle && (
-          <span className={cn('mt-1 block text-[11px] font-medium tracking-wide uppercase', tone === 'light' ? 'text-paper/50' : 'text-ink-faint')}>
+          <span className={cn('mt-1 block text-[11px] font-medium tracking-wide uppercase', tone === 'light' ? 'text-paper/70' : 'text-ink-muted')}>
             {subtitle}
           </span>
         )}

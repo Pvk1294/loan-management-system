@@ -84,7 +84,7 @@ const rules: readonly BreRule[] = [
     check: ({ pan }) =>
       PAN_REGEX.test(normalizePan(pan))
         ? null
-        : 'PAN must be 5 letters, 4 digits and 1 letter, for example ABCDE1234F.',
+        : 'This is an invalid PAN. Please enter a valid PAN.',
   },
   {
     code: 'EMPLOYMENT',

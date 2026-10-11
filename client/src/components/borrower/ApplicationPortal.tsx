@@ -56,6 +56,12 @@ export function ApplicationPortal() {
     return <AppliedMoment loan={justApplied} onContinue={() => setJustApplied(null)} />;
   }
 
+  /** Opens a new application, and lets Sales know this past borrower is back. */
+  const startAgain = () => {
+    setStartingNew(true);
+    void api('/borrower/reapply-intent', { method: 'POST' }).catch(() => undefined);
+  };
+
   const firstName = user.name.split(' ')[0];
   const latestLoan = data.loans[0];
   const trackedLoan = data.activeLoan ?? (latestLoan && !startingNew ? latestLoan : null);
@@ -64,7 +70,7 @@ export function ApplicationPortal() {
     const pastLoans = data.loans.filter((loan) => loan.id !== trackedLoan.id);
     return (
       <div className="space-y-6">
-        <LoanTracker loan={trackedLoan} onStartNew={data.activeLoan ? undefined : () => setStartingNew(true)} />
+        <LoanTracker loan={trackedLoan} onStartNew={data.activeLoan ? undefined : startAgain} />
         {pastLoans.length > 0 && (
           <Card className="reveal" style={{ '--i': 3 } as CSSProperties}>
             <CardHeader title="Earlier loans" />
@@ -74,7 +80,7 @@ export function ApplicationPortal() {
                   <li key={loan.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                     <div>
                       <p className="amount text-base text-ink">{formatRupees(loan.principal)}</p>
-                      <p className="text-xs text-ink-muted">
+                      <p className="text-[13px] text-ink-muted">
                         <span className="font-mono">{loan.reference}</span> · applied {formatDate(loan.appliedAt)}
                       </p>
                     </div>

@@ -58,6 +58,7 @@ const LEAD_STAGE_TONES: Record<LeadStage, Tone> = {
   NOT_ELIGIBLE: 'rose',
   ELIGIBLE: 'amber',
   READY_TO_APPLY: 'emerald',
+  RETURNING: 'violet',
 };
 
 export function LeadStageBadge({ stage }: { stage: LeadStage }) {

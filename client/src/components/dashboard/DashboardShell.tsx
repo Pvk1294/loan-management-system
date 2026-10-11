@@ -38,7 +38,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="relative flex-1 px-4 py-5" aria-label="Modules">
-          <p className="px-3 pb-3 text-[11px] font-semibold tracking-[0.14em] text-paper/35 uppercase">
+          <p className="px-3 pb-3 text-xs font-semibold tracking-[0.12em] text-paper/60 uppercase">
             {user?.role === 'admin' ? 'All modules' : 'Your module'}
           </p>
           {!user && <Skeleton className="mx-3 h-10 bg-white/10" />}
@@ -54,11 +54,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                     className={cn(
                       'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                       'focus-visible:outline-2 focus-visible:outline-saffron-400',
-                      active ? 'bg-white/10 text-paper' : 'text-paper/55 hover:translate-x-0.5 hover:bg-white/5 hover:text-paper',
+                      active ? 'bg-white/10 text-paper' : 'text-paper/75 hover:translate-x-0.5 hover:bg-white/5 hover:text-paper',
                     )}
                   >
                     {active && <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-saffron-400" aria-hidden="true" />}
-                    <Icon className={cn('h-[18px] w-[18px] transition-colors', active ? 'text-saffron-300' : 'text-paper/40 group-hover:text-paper/80')} aria-hidden="true" />
+                    <Icon className={cn('h-[18px] w-[18px] transition-colors', active ? 'text-saffron-300' : 'text-paper/60 group-hover:text-paper/90')} aria-hidden="true" />
                     {module.label}
                   </Link>
                 </li>
